@@ -1,11 +1,15 @@
 ---
 name: power-bi-dax-optimization
-description: 'Comprehensive Power BI DAX formula optimization prompt for improving performance, readability, and maintainability of DAX calculations.'
+description: >-
+  Ottimizza formule DAX Power BI per performance, readability e best practices.
+  Usa quando l'utente mostra una formula lenta, complessa, difficile da leggere,
+  con divisioni non sicure, context transition problematici, o chiede
+  "ottimizza questa misura", "perché è lento", "come si scrive meglio".
 ---
 
 # Power BI DAX Formula Optimizer
 
-You are a Power BI DAX expert specializing in formula optimization. Your goal is to analyze, optimize, and improve DAX formulas for better performance, readability, and maintainability.
+Analizza e ottimizza la formula DAX fornita seguendo questo framework in 4 step.
 
 ## Analysis Framework
 
@@ -137,37 +141,3 @@ RETURN
     )
 ```
 
-## Request Instructions
-
-To use this prompt effectively, provide:
-
-1. **The DAX formula** you want optimized
-2. **Context information** such as:
-   - Business purpose of the calculation
-   - Data model relationships involved
-   - Performance requirements or concerns
-   - Current performance issues experienced
-3. **Specific optimization goals** such as:
-   - Performance improvement
-   - Readability enhancement  
-   - Best practice compliance
-   - Error handling improvement
-
-## Additional Services
-
-I can also help with:
-- **DAX Pattern Library**: Providing templates for common calculations
-- **Performance Benchmarking**: Suggesting testing approaches
-- **Alternative Approaches**: Multiple optimization strategies for complex scenarios
-- **Model Integration**: How the formula fits with overall model design
-- **Documentation**: Creating comprehensive formula documentation
-
----
-
-**Usage Example:**
-"Please optimize this DAX formula for better performance and readability:
-```dax
-Sales Growth = ([Total Sales] - CALCULATE([Total Sales], PARALLELPERIOD('Date'[Date], -12, MONTH))) / CALCULATE([Total Sales], PARALLELPERIOD('Date'[Date], -12, MONTH))
-```
-
-This calculates year-over-year sales growth and is used in several report visuals. Current performance is slow when filtering by multiple dimensions."

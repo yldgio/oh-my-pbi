@@ -1,0 +1,43 @@
+{
+  "skill": "power-bi-dax-optimization",
+  "version": "1.0",
+  "description": "Eval cases for DAX formula optimization skill",
+  "test_cases": [
+    {
+      "id": "tc-dax-001",
+      "name": "Repeated calculation without VAR",
+      "input": "Optimize this DAX measure:\nSales Growth % = ([Total Sales] - CALCULATE([Total Sales], PREVIOUSMONTH('Date'[Date]))) / CALCULATE([Total Sales], PREVIOUSMONTH('Date'[Date]))\n\nThis calculates MoM growth and is used in 5 visuals. It feels slow.",
+      "expected_output_contains": ["VAR", "DIVIDE", "PreviousMonth", "CurrentMonth"],
+      "expected_output_not_contains": ["PREVIOUSMONTH.*PREVIOUSMONTH"],
+      "evaluation_notes": "Must introduce VAR for PreviousMonth calculation, use DIVIDE for safety"
+    },
+    {
+      "id": "tc-dax-002",
+      "name": "Unsafe division operator",
+      "input": "Review this measure:\nProfit Margin = [Gross Profit] / [Total Revenue]",
+      "expected_output_contains": ["DIVIDE", "division by zero", "BLANK"],
+      "evaluation_notes": "Must flag unsafe division and recommend DIVIDE function with alternate result"
+    },
+    {
+      "id": "tc-dax-003",
+      "name": "COUNT on non-nullable column",
+      "input": "Is this optimal?\nOrder Count = COUNT(Orders[OrderID])",
+      "expected_output_contains": ["COUNTROWS"],
+      "evaluation_notes": "Must recommend COUNTROWS(Orders) as more performant alternative"
+    },
+    {
+      "id": "tc-dax-004",
+      "name": "Complex nested CALCULATE without variables",
+      "input": "Optimize for readability:\nYTD vs LY = DIVIDE(CALCULATE([Sales], DATESYTD('Date'[Date])), CALCULATE([Sales], DATESYTD(DATEADD('Date'[Date], -1, YEAR)))) - 1",
+      "expected_output_contains": ["VAR", "CurrentYTD", "PreviousYTD", "DIVIDE", "RETURN"],
+      "evaluation_notes": "Must use VARs for both CALCULATE blocks, clear variable names, DIVIDE for safety"
+    },
+    {
+      "id": "tc-dax-005",
+      "name": "FILTER used as filter argument",
+      "input": "Why is this slow?\nCategoryTotal = CALCULATE([Sales], FILTER(ALL(Products), Products[Category] = \"Electronics\"))",
+      "expected_output_contains": ["Products[Category]", "= \"Electronics\"", "filter argument"],
+      "evaluation_notes": "Must identify FILTER(ALL(...)) anti-pattern and replace with direct column filter"
+    }
+  ]
+}
