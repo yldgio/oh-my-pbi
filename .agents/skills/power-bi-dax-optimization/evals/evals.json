@@ -38,6 +38,24 @@
       "input": "Why is this slow?\nCategoryTotal = CALCULATE([Sales], FILTER(ALL(Products), Products[Category] = \"Electronics\"))",
       "expected_output_contains": ["Products[Category]", "= \"Electronics\"", "filter argument"],
       "evaluation_notes": "Must identify FILTER(ALL(...)) anti-pattern and replace with direct column filter"
+    },
+    {
+      "id": "tc-dax-neg-001",
+      "name": "Negative: dataflow refresh slow",
+      "type": "negative",
+      "input": "My Fabric Dataflow Gen2 refresh is taking 3 hours. How do I speed it up?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "pbi-dataflows",
+      "evaluation_notes": "Dataflow refresh is NOT DAX formula optimization scope. Must route to pbi-dataflows (incremental refresh, gateway, staging)."
+    },
+    {
+      "id": "tc-dax-neg-002",
+      "name": "Negative: chart selection",
+      "type": "negative",
+      "input": "What chart should I use to show monthly sales trends over 12 months?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-report-design-consultation",
+      "evaluation_notes": "Visualization/chart selection is NOT DAX formula scope. Must route to power-bi-report-design-consultation."
     }
   ]
 }

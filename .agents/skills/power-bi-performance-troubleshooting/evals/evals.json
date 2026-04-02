@@ -37,6 +37,24 @@
       "input": "During business hours (9am-12pm), our Power BI reports become very slow for all users simultaneously. Outside those hours it's fine. We're on Power BI Premium P1.",
       "expected_output_contains": ["capacity", "CPU", "throttling", "concurrent", "Capacity Metrics", "schedule"],
       "evaluation_notes": "Must identify concurrent usage / capacity throttling pattern, recommend Capacity Metrics App, stagger refresh schedules"
+    },
+    {
+      "id": "tc-perf-neg-001",
+      "name": "Negative: chart type selection",
+      "type": "negative",
+      "input": "What chart type should I use to compare sales across 8 product categories?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-report-design-consultation",
+      "evaluation_notes": "Chart/visual selection is NOT performance troubleshooting scope. Must route to power-bi-report-design-consultation."
+    },
+    {
+      "id": "tc-perf-neg-002",
+      "name": "Negative: DAX formula syntax optimization",
+      "type": "negative",
+      "input": "How do I rewrite this DAX measure using VAR to make it cleaner? Profit Margin = [Gross Profit] / [Revenue]",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-dax-optimization",
+      "evaluation_notes": "DAX syntax/formula optimization is NOT performance troubleshooting scope. Must route to power-bi-dax-optimization."
     }
   ]
 }

@@ -1,10 +1,11 @@
 ---
 name: power-bi-model-design-review
 description: >-
-  Conduce una design review completa del modello dati Power BI. Usa quando
-  l'utente vuole validare il proprio modello, ha performance lente, sta per
-  andare in produzione, o chiede "rivedi il mio modello", "è ben strutturato",
-  "ho relazioni problematiche", "pre-production check", "best practices modello".
+  Conduce una design review dell'architettura del modello dati Power BI. Usa quando
+  l'utente vuole validare schema, relazioni o storage mode, sta per andare in
+  produzione, o chiede "rivedi il mio modello", "è ben strutturato", "ho relazioni
+  problematiche", "pre-production check", "best practices modello", "star schema".
+  NON usare per diagnosi attiva di lentezza — usa power-bi-performance-troubleshooting.
 ---
 
 # Power BI Data Model Design Review

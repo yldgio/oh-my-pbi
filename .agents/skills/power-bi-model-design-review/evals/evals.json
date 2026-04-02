@@ -37,6 +37,24 @@
       "input": "I have a many-to-many relationship between Products and Promotions using a text column ProductCode. Should I be concerned?",
       "expected_output_contains": ["many-to-many", "integer key", "surrogate", "performance", "bridge table"],
       "evaluation_notes": "Must flag text key in M:M relationship as double performance issue and recommend integer surrogate key + bridge table pattern"
+    },
+    {
+      "id": "tc-model-neg-001",
+      "name": "Negative: optimize a specific DAX measure",
+      "type": "negative",
+      "input": "Can you optimize this DAX measure? Sales YOY = DIVIDE([Sales] - CALCULATE([Sales], SAMEPERIODLASTYEAR('Date'[Date])), CALCULATE([Sales], SAMEPERIODLASTYEAR('Date'[Date])))",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-dax-optimization",
+      "evaluation_notes": "DAX formula optimization is NOT model design review scope. Must route to power-bi-dax-optimization."
+    },
+    {
+      "id": "tc-model-neg-002",
+      "name": "Negative: active performance troubleshooting",
+      "type": "negative",
+      "input": "My report page is taking 20 seconds to load. Users are complaining. What should I check first?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-performance-troubleshooting",
+      "evaluation_notes": "Active performance diagnosis is NOT model design review scope. Must route to power-bi-performance-troubleshooting."
     }
   ]
 }

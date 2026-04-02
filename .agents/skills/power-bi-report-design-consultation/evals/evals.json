@@ -37,6 +37,24 @@
       "input": "I want to show the breakdown of our revenue by 12 product categories as a percentage of total. What visualization is best?",
       "expected_output_contains": ["treemap", "bar", "donut", "5-7", "category"],
       "evaluation_notes": "Must flag that pie/donut is not ideal for 12 categories (max 5-7), recommend treemap or stacked bar as alternatives"
+    },
+    {
+      "id": "tc-report-neg-001",
+      "name": "Negative: model architecture review",
+      "type": "negative",
+      "input": "My Power BI model has circular relationships and some bidirectional filters I'm not sure about. Can you review it?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-model-design-review",
+      "evaluation_notes": "Model architecture review is NOT report design scope. Must route to power-bi-model-design-review."
+    },
+    {
+      "id": "tc-report-neg-002",
+      "name": "Negative: DAX measure calculation error",
+      "type": "negative",
+      "input": "My DAX measure is returning wrong results. It uses CALCULATE with SAMEPERIODLASTYEAR but the numbers don't match. Can you help?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-dax-optimization",
+      "evaluation_notes": "DAX correctness/debugging is NOT report design scope. Must route to power-bi-dax-optimization."
     }
   ]
 }

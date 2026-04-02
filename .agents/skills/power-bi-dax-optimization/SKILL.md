@@ -1,10 +1,11 @@
 ---
 name: power-bi-dax-optimization
 description: >-
-  Ottimizza formule DAX Power BI per performance, readability e best practices.
-  Usa quando l'utente mostra una formula lenta, complessa, difficile da leggere,
-  con divisioni non sicure, context transition problematici, o chiede
-  "ottimizza questa misura", "perché è lento", "come si scrive meglio".
+  Ottimizza la struttura sintattica e le performance di formule DAX specifiche.
+  Usa quando l'utente fornisce una misura o formula DAX concreta da migliorare,
+  chiede "ottimizza questa misura", "come si scrive meglio in DAX", "questa formula
+  è corretta", "aggiungi variabili", "divisione sicura", "best practices DAX".
+  NON usare per diagnosi di performance di sistema — usa power-bi-performance-troubleshooting.
 ---
 
 # Power BI DAX Formula Optimizer
