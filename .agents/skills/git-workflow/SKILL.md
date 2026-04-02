@@ -1,140 +1,158 @@
 ---
 name: git-workflow
 description: >
-  Core git operations for Power BI / Fabric projects on Windows.
-  Covers: repo init/clone, branching, fetch, pull, push, stash, remote
-  detection, Repo State Gate, and safety guardrails. Delegates commit
-  creation to git-commit skill, and PR/issue operations to gh-cli or
-  az-devops-cli. All commands are PowerShell-native.
+  Operazioni git fondamentali per progetti Power BI / Fabric su Windows.
+  Usa quando l'utente chiede di: creare un branch, cambiare branch, sincronizzare,
+  aggiornare il branch, fare push, stashare il lavoro, salvare temporaneamente,
+  clonare o inizializzare un repo — anche in italiano: "crea un branch", "cambia branch",
+  "manda le modifiche", "sincronizza con main", "salva il lavoro temporaneamente",
+  "aggiorna il branch", "stash". Include: Repo State Gate, rilevamento remoto
+  (GitHub / Azure DevOps), guardrail di sicurezza, configurazione Windows.
+  Delega la creazione commit a git-commit, PR/issue a gh-cli o az-devops-cli.
+  Tutti i comandi sono PowerShell-native.
 license: MIT
 allowed-tools: runCommands
 ---
 
-# Git Workflow — Core Operations
+# Git Workflow — Operazioni Core
 
-## Scope
+## Quando Usare
 
-This skill owns:
-- Repository initialization and cloning
-- Branch creation and switching
-- Fetch, pull (with rebase safety check), push
-- Stash lifecycle
-- Remote host detection (GitHub vs Azure DevOps)
-- Repo State Gate (pre-write safety check)
-- Windows-specific git environment guidance
+Usa `git-workflow` quando l'utente:
+- Vuole **creare o cambiare branch** ("crea un branch", "passa al branch X")
+- Vuole **aggiornare/sincronizzare** il branch ("sincronizza con main", "pull", "aggiorna")
+- Vuole **fare push** ("manda le modifiche", "push", "carica su GitHub")
+- Vuole **stashare** il lavoro ("salva temporaneamente", "metti da parte le modifiche")
+- Vuole **clonare o inizializzare** un repo
+- Ha bisogno di **rilevare il remoto** (GitHub vs Azure DevOps)
 
-This skill does **NOT** own:
-- Commit creation → delegate to `git-commit`
-- GitHub PRs/issues/Actions → delegate to `gh-cli`
-- Azure DevOps PRs/pipelines/work items → delegate to `az-devops-cli`
+**Delega sempre ad altri skill:**
+- Messaggio di commit → `git-commit`
+- PR/issue/Actions GitHub → `gh-cli`
+- PR/pipeline/work item Azure DevOps → `az-devops-cli`
+- Rebase interattivo o riscrittura storia → admin mode
+
+---
+
+## Quick Reference
+
+| Operazione | Comando PowerShell |
+|------------|-------------------|
+| Crea branch | `git checkout -b "feature/nome" origin/main` |
+| Cambia branch | `git fetch origin && git checkout nome-branch` |
+| Aggiorna branch | `git pull --rebase origin nome-branch` |
+| Stash | `git stash push -m "descrizione"` |
+| Ripristina stash | `git stash apply stash@{0}` |
+| Controlla stato | `git status` (sempre sicuro) |
+| Lista branch | `git branch -v` |
+| Fetch aggiornamenti | `git fetch origin` (sempre sicuro) |
 
 ---
 
 ## Repo State Gate
 
-**Run before every write operation** (branch create, pull --rebase, push, commit, PR create).
+**Esegui prima di ogni operazione di scrittura** (crea branch, pull --rebase, push, commit, crea PR).
 
 ```powershell
-# 1. Check for active conflict/rebase/merge operations
+# 1. Verifica operazioni in corso (merge/rebase/cherry-pick)
 $gitDir = git rev-parse --git-dir 2>$null
-$mergeHead = Test-Path "$gitDir/MERGE_HEAD"
-$rebaseDir = (Test-Path "$gitDir/rebase-merge") -or (Test-Path "$gitDir/rebase-apply")
+$mergeHead  = Test-Path "$gitDir/MERGE_HEAD"
+$rebaseDir  = (Test-Path "$gitDir/rebase-merge") -or (Test-Path "$gitDir/rebase-apply")
 $cherryPick = Test-Path "$gitDir/CHERRY_PICK_HEAD"
 
 if ($mergeHead -or $rebaseDir -or $cherryPick) {
-    Write-Host "⛔ STOPPED: A merge, rebase, or cherry-pick is already in progress."
-    Write-Host "   Resolve it first before continuing."
+    Write-Host "⛔ STOP: C'è già un'operazione in corso (merge/rebase/cherry-pick)."
+    Write-Host "   Risolvila prima di continuare."
     return
 }
 
-# 2. Check for detached HEAD
+# 2. Verifica detached HEAD
 $headRef = git symbolic-ref HEAD 2>$null
 if (-not $headRef) {
-    Write-Host "⛔ STOPPED: Repository is in detached HEAD state."
-    Write-Host "   Run: git checkout <branch-name>  to return to a branch."
+    Write-Host "⛔ STOP: Il repository è in stato 'detached HEAD'."
+    Write-Host "   Esegui: git checkout <nome-branch>  per tornare su un branch."
     return
 }
 
-# 3. Check if on a protected branch (main / master / develop)
+# 3. Verifica branch protetti
 $branch = git branch --show-current
 $protectedBranches = @("main", "master", "develop")
 if ($protectedBranches -contains $branch) {
-    Write-Host "⛔ STOPPED: You are on '$branch'."
-    Write-Host "   Working directly on a protected branch is not allowed."
-    Write-Host "   The agent will create a feature branch — tell it what you're working on."
+    Write-Host "⛔ STOP: Sei su '$branch'."
+    Write-Host "   Non è consentito lavorare direttamente su un branch protetto."
+    Write-Host "   Dimmi su cosa stai lavorando e creo un feature branch."
     return
 }
 
-# 4. Check upstream tracking
+# 4. Verifica upstream
 $upstream = git rev-parse --abbrev-ref "@{upstream}" 2>$null
 if (-not $upstream) {
-    Write-Host "⚠️  WARNING: Current branch has no upstream tracking branch."
-    Write-Host "   First push will require: git push --set-upstream origin <branch>"
+    Write-Host "⚠️  ATTENZIONE: Il branch corrente non ha un upstream configurato."
+    Write-Host "   Il primo push richiederà: git push --set-upstream origin $branch"
 }
 
-# 5. Report current state
+# 5. Stato attuale
 $remote = (git remote -v 2>$null | Select-Object -First 1)
-Write-Host "✅ Repo state: branch=$branch | upstream=$upstream | remote=$remote"
+Write-Host "✅ Stato repo: branch=$branch | upstream=$upstream | remote=$remote"
 ```
 
-**Hard stops (block everything):**
-- Merge in progress
-- Rebase in progress
-- Cherry-pick in progress
-- Detached HEAD state
+**Stop immediato:**
+- Merge in corso · Rebase in corso · Cherry-pick in corso · Detached HEAD
 
-**Soft warnings (announce, ask to confirm):**
-- No upstream tracking branch
-- Local branch is behind remote (stale)
-- Shallow clone detected (`git rev-parse --is-shallow-repository`)
+**Avvisi (comunica e chiedi conferma):**
+- Nessun upstream tracking
+- Branch locale indietro rispetto al remoto
+- Clone superficiale (`git rev-parse --is-shallow-repository`)
 
 ---
 
-## Remote Host Detection
+## Rilevamento Remoto
 
 ```powershell
 function Get-GitRemoteHost {
     $remoteUrl = git remote get-url origin 2>$null
     if (-not $remoteUrl) {
-        Write-Host "No remote named 'origin' found. Ask user to specify remote."
+        Write-Host "Nessun remoto 'origin' trovato. Chiedi all'utente di specificarlo."
         return "unknown"
     }
-    if ($remoteUrl -match "github\.com") { return "github" }
+    if ($remoteUrl -match "github\.com")                        { return "github" }
     if ($remoteUrl -match "dev\.azure\.com|visualstudio\.com") { return "azuredevops" }
-    Write-Host "⚠️ Unrecognized remote URL: $remoteUrl"
+    Write-Host "⚠️ URL remoto non riconosciuto: $remoteUrl"
     return "unknown"
 }
 ```
 
-| Pattern | Detected host | PR tool |
-|---------|--------------|---------|
-| `github.com` | GitHub | `gh-cli` skill |
-| `dev.azure.com` or `visualstudio.com` | Azure DevOps | `az-devops-cli` skill |
-| Other / multiple remotes | Ask user | Manual guidance |
+| Pattern | Host rilevato | Tool per PR |
+|---------|--------------|-------------|
+| `github.com` | GitHub | skill `gh-cli` |
+| `dev.azure.com` o `visualstudio.com` | Azure DevOps | skill `az-devops-cli` |
+| Altro / più remoti | Chiedi all'utente | Guida manuale |
 
-**Multiple remotes:** If `git remote -v` shows more than one remote, present them to the user and ask which is the team/PR remote before any push.
+Se `git remote -v` mostra più remoti: mostrali all'utente e chiedi quale usare prima di qualsiasi push.
 
 ---
 
-## Branch Operations
+## Operazioni Branch
 
-### Create feature branch
+### Crea feature branch
 
 ```powershell
-# Discover default base branch from remote
-$baseBranch = git remote show origin 2>$null | Select-String "HEAD branch" | ForEach-Object { ($_ -split ":\s*")[1].Trim() }
+# Rileva branch base dal remoto
+$baseBranch = git remote show origin 2>$null |
+    Select-String "HEAD branch" |
+    ForEach-Object { ($_ -split ":\s*")[1].Trim() }
 if (-not $baseBranch) { $baseBranch = "main" }
 
-# Create and switch
+# Crea e passa al nuovo branch
 git checkout -b "feature/$featureName" origin/$baseBranch
 ```
 
-**Rules:**
-- Branch name format: `feature/{short-description}` (lowercase, hyphens only)
-- Never create directly from `main` local — always from `origin/main` (fresh state)
-- Never create a branch while in detached HEAD (run Repo State Gate first)
+**Regole:**
+- Formato: `feature/{descrizione-breve}` (minuscolo, solo trattini)
+- Sempre da `origin/main` (stato fresco), mai da `main` locale
+- Mai creare un branch in detached HEAD (esegui prima il Repo State Gate)
 
-### Switch to existing branch
+### Passa a branch esistente
 
 ```powershell
 git fetch origin
@@ -144,205 +162,199 @@ git branch --set-upstream-to="origin/$branchName" $branchName
 
 ---
 
-## Fetch and Pull
+## Fetch e Pull
 
-### Safe fetch (always safe, no changes to working tree)
+### Fetch (sempre sicuro)
 
 ```powershell
 git fetch origin
-git status  # Show behind/ahead count
+git status   # Mostra quanti commit sei avanti/indietro
 ```
 
-### Safe pull (with rebase guard)
+### Pull sicuro (con guardrail rebase)
 
 ```powershell
-# Guard: working tree must be clean
+# Guardrail: working tree deve essere pulito
 $status = git status --porcelain
 if ($status) {
-    Write-Host "⚠️ Uncommitted changes detected. Stash or commit before pulling."
-    Write-Host "Changed files:"
+    Write-Host "⚠️ Ci sono modifiche non committate. Fai stash o commit prima del pull."
+    Write-Host "File modificati:"
     $status | ForEach-Object { Write-Host "  $_" }
     return
 }
 
-# Guard: no rebase/merge in progress (Repo State Gate covers this)
-
-# Pull with rebase
 git pull --rebase origin $branchName
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "⛔ Pull failed — likely a rebase conflict."
-    Write-Host "   Options:"
-    Write-Host "   1. Resolve conflicts in the listed files, then: git rebase --continue"
-    Write-Host "   2. Abort and return to previous state: git rebase --abort"
-    Write-Host "   Do NOT continue with other work until this is resolved."
+    Write-Host "⛔ Pull fallito — probabilmente un conflitto di rebase."
+    Write-Host "   Opzioni:"
+    Write-Host "   1. Risolvi i conflitti nei file elencati, poi: git rebase --continue"
+    Write-Host "   2. Annulla e torna allo stato precedente: git rebase --abort"
+    Write-Host "   Non continuare con altro lavoro finché non è risolto."
 }
 ```
 
-**Never use `git pull --rebase` if:**
-- Working tree is dirty
-- A rebase is already in progress
-- User hasn't explicitly confirmed they understand rebase rewrites history
+**Non usare `git pull --rebase` se:**
+- Il working tree non è pulito
+- C'è già un rebase in corso
+
+### Risoluzione Conflitti di Rebase
+
+Se `git pull --rebase` fallisce con conflitti:
+
+```powershell
+# 1. Vedi i file in conflitto
+git status
+
+# 2. Per ogni file: apri, risolvi i marcatori (<<<<<<< | ======= | >>>>>>>)
+
+# 3. Aggiungi i file risolti
+git add <file-risolto>
+
+# 4. Continua il rebase
+git rebase --continue
+
+# 5. Verifica completamento
+git log --oneline -5
+```
+
+**Per annullare e ricominciare:**
+```powershell
+git rebase --abort
+git status   # Torna allo stato pre-pull
+```
 
 ---
 
 ## Push
 
 ```powershell
-# 1. Validate remote — must be known before pushing
+# 1. Valida remoto
 $remote = git remote get-url origin 2>$null
 if (-not $remote) {
-    Write-Host "⛔ STOPPED: No remote named 'origin' found."
-    Write-Host "   Add a remote first: git remote add origin <url>"
+    Write-Host "⛔ STOP: Nessun remoto 'origin' trovato."
+    Write-Host "   Aggiungilo prima: git remote add origin <url>"
     return
 }
 
-# 2. Always announce destination and wait for explicit user confirmation
+# 2. Mostra destinazione e attendi conferma esplicita
 $branch = git branch --show-current
 Write-Host "Sto per inviare le modifiche a:"
-Write-Host "  Remote: $remote"
-Write-Host "  Branch: $branch"
-# REQUIRED: Agent must ask the user "Procedo?" and wait for an affirmative
-# answer before executing the push below. Do NOT push without confirmation.
+Write-Host "  Remoto : $remote"
+Write-Host "  Branch : $branch"
+# OBBLIGATORIO: chiedi conferma con ask_user o equivalente.
+# Non eseguire il push senza risposta affermativa dell'utente.
 ```
 
-**Agent MUST ask for confirmation before pushing** — use `ask_user` (or equivalent) with the destination details above. Only execute the push after the user confirms.
-
 ```powershell
-# First push (sets upstream)
+# Primo push (imposta upstream)
 git push --set-upstream origin $branch
 
-# Subsequent pushes
+# Push successivi
 git push origin $branch
 ```
 
-**Hard blocks:**
-- `git push --force` — **ALWAYS BLOCKED**. Offer `--force-with-lease` only if user explains why.
-- Push to `main`/`master`/`develop` — **HARD STOP**. Explain why and offer feature branch instead.
-- Push to unknown/unrecognized remote — **HARD STOP**. Confirm destination with user first.
+**Blocchi assoluti:**
+- `git push --force` → **SEMPRE BLOCCATO**. Offri `--force-with-lease` solo se l'utente spiega il motivo
+- Push su `main`/`master`/`develop` → **STOP IMMEDIATO**. Offri un feature branch
+- Push su remoto sconosciuto → **STOP IMMEDIATO**. Conferma destinazione prima
 
 ---
 
-## Stash Lifecycle
+## Stash
 
 ```powershell
-# Save (always named)
-git stash push -m "$stashDescription"
-Write-Host "Stashed: $stashDescription"
-Write-Host "To restore: git stash pop (or apply to keep stash)"
+# Salva (sempre con nome)
+git stash push -m "$descrizione"
+Write-Host "Salvato: $descrizione"
+Write-Host "Per ripristinare: git stash apply stash@{0}"
 
-# List
+# Lista
 git stash list
 
-# Restore (prefer apply to preserve stash entry)
+# Ripristina (preferisci apply per conservare lo stash)
 git stash apply stash@{0}
-# Only use pop if user explicitly wants to remove from stash list
+# Usa pop solo se l'utente vuole rimuovere lo stash dalla lista
 
-# HARD BLOCK: stash drop and stash clear
-# Before allowing:
-Write-Host "⚠️ You are about to permanently delete stashed work."
-Write-Host "Stash contents:"
+# BLOCCO: stash drop e stash clear
+Write-Host "⚠️ Stai per eliminare definitivamente del lavoro salvato."
+Write-Host "Contenuto dello stash:"
 git stash show -p stash@{0}
-Write-Host "This CANNOT be undone. Type 'DELETE' to confirm:"
+Write-Host "Non è reversibile. Scrivi 'ELIMINA' per confermare:"
 ```
 
-**Rules:**
-- Always name stashes (`-m "{description}"`)
-- Prefer `apply` over `pop` (apply keeps the stash entry as backup)
-- `stash drop` and `stash clear` require contents preview + explicit confirmation
+**Regole:**
+- Dai sempre un nome allo stash (`-m "descrizione"`)
+- Preferisci `apply` a `pop` (apply conserva lo stash come backup)
+- `stash drop` e `stash clear` richiedono anteprima + conferma esplicita
 
 ---
 
-## Safety Rules (Hard Blocks)
+## Regole di Sicurezza
 
-These operations are **blocked** unless the user explicitly requests them AND the agent explains consequences:
-
-| Command | Why blocked | Safe alternative |
-|---------|-------------|-----------------|
-| `git push --force` | Destroys remote history; breaks teammates | `git push --force-with-lease` (with explanation) |
-| `git reset --hard` | Permanently destroys uncommitted work | `git stash push` first, then reset |
-| `git clean -fd` / `-fdx` | Deletes untracked files (may include exports) | Show preview first; confirm file by file |
-| `git restore <file>` | Silently discards local changes | Show diff first; confirm per file |
-| `git branch -D` | Deletes branch even if unmerged | Check merged status first |
-| `git stash drop/clear` | Loses stashed work permanently | Show contents first |
-| `git commit --amend` | Rewrites history (dangerous if already pushed) | Admin mode only |
-| `git rebase -i` | Interactive rewrite (dangerous on shared branches) | Admin mode only |
-| `--no-verify` | Bypasses hooks and local policy | Never; fix what the hook is catching |
-| Direct commit to `main`/`master`/`develop` | **HARD STOP** | Create feature branch instead |
+| Comando | Perché bloccato | Alternativa sicura |
+|---------|----------------|-------------------|
+| `git push --force` | Distrugge la storia remota | `git push --force-with-lease` (con spiegazione) |
+| `git reset --hard` | Distrugge lavoro non committato | Prima `git stash push`, poi reset |
+| `git clean -fd` / `-fdx` | Elimina file non tracciati | Mostra anteprima; conferma file per file |
+| `git restore <file>` | Scarta modifiche locali in silenzio | Mostra diff prima; conferma per file |
+| `git branch -D` | Elimina branch anche se non merged | Verifica prima se è merged |
+| `git stash drop/clear` | Perde lavoro in modo permanente | Mostra contenuto prima |
+| `git commit --amend` | Riscrive storia (pericoloso se già pushato) | Solo admin mode |
+| `git rebase -i` | Riscrittura interattiva su branch condivisi | Solo admin mode |
+| `--no-verify` | Bypassa hook e policy locali | Mai — correggi ciò che l'hook segnala |
+| Commit diretto su `main`/`master`/`develop` | **STOP** | Crea un feature branch |
 
 ---
 
-## Windows-Specific Notes
+## Troubleshooting
 
-### Line ending configuration
+| Errore | Causa | Soluzione |
+|--------|-------|-----------|
+| "Permission denied (publickey)" | Autenticazione SSH fallita | `ssh -T git@github.com`; potrebbe servire `gh auth login` |
+| "failed to push some refs" | Branch locale indietro rispetto al remoto | Prima `git pull --rebase`, poi riprova il push |
+| "rejected by hook" | Hook ha bloccato l'operazione | Correggi il problema segnalato dall'hook |
+| "detached HEAD" | Checkout su un commit, non su un branch | `git checkout <nome-branch>` |
+| "shallow repository" | Clone con `--depth` | `git fetch --unshallow` per storia completa |
+| Credenziali scadute | Token GCM o SSH expirato | Per GitHub: `gh auth login`; per ADO: `az devops configure` |
+
+---
+
+## Note Windows
 
 ```powershell
-# Check current setting
-git config core.autocrlf
-
-# Recommended for Windows (convert to LF on commit, CRLF on checkout)
+# Line ending consigliato (LF su commit, CRLF su checkout)
 git config --global core.autocrlf true
 
-# Fabric JSON files — enforce LF always (add to .gitattributes)
+# File JSON Fabric — forza sempre LF (aggiungi a .gitattributes)
 # *.json text eol=lf
-```
 
-### Git Credential Manager
+# Path con spazi — usa sempre le virgolette
+git add "cartella con spazi/file.json"
 
-Windows Git ships with Git Credential Manager (GCM). If prompted for credentials:
-
-```powershell
-# Check GCM is configured
-git config --global credential.helper
-# Should return: manager  (or manager-core on older installs)
-
-# Force re-authentication
-git credential reject
-```
-
-If HTTPS token has expired, GCM will prompt for a new one. The agent will wait for the user to complete the browser flow.
-
-### Path handling
-
-```powershell
-# Always quote paths with spaces
-git add "path with spaces/file.json"
-
-# Check for long path support (Windows 10/11)
+# Percorsi lunghi (Windows 10/11)
 git config --global core.longpaths true
-```
 
-### Credential/auth check before first remote operation
-
-```powershell
-# Test remote connectivity without fetching
+# Test connettività remoto prima della prima operazione
 git ls-remote origin HEAD 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "⚠️ Cannot reach remote. This may require authentication."
-    Write-Host "   For GitHub: run 'gh auth status' to check login state"
-    Write-Host "   For Azure DevOps: run 'az devops configure --list'"
+    Write-Host "⚠️ Impossibile raggiungere il remoto. Verifica autenticazione."
+    Write-Host "   GitHub: gh auth status"
+    Write-Host "   Azure DevOps: az devops configure --list"
 }
 ```
 
 ---
 
-## git-commit Skill — PowerShell Fallback
+## Fallback PowerShell per git-commit
 
-The `git-commit` skill uses Bash. If Bash is not available on PATH, use these PS-native equivalents:
+Il skill `git-commit` usa Bash. Su Windows senza Bash disponibile:
 
 ```powershell
-# Check if bash is available
 $bashAvailable = Get-Command bash -ErrorAction SilentlyContinue
-
 if (-not $bashAvailable) {
-    # PS-native commit (delegate to git-commit skill for message generation,
-    # but execute the commit directly in PS)
-    
-    # Stage files
-    git add $filePaths  # or: git add -A for all changes
-    
-    # Commit with message (agent generates message, user confirms)
+    # Delega la generazione del messaggio a git-commit,
+    # ma esegui il commit direttamente in PowerShell
+    git add $filePaths
     git commit -m $commitMessage
 }
 ```
-
-The `oh-my-pbi` orchestrator detects the shell environment at session start and uses the PS path when needed.
