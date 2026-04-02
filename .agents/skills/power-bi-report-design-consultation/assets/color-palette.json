@@ -1,0 +1,55 @@
+{
+  "name": "Power BI Semantic Color Palette",
+  "version": "1.0",
+  "description": "Semantic color mapping for Power BI reports. Use these colors consistently to communicate meaning through color.",
+  "colors": {
+    "positive": {
+      "name": "Forest Green",
+      "hex": "#2E8B57",
+      "rgb": "46, 139, 87",
+      "usage": "Positive performance, on-target, growth, success states",
+      "contrast_on_white": "4.6:1",
+      "wcag_aa": true
+    },
+    "negative": {
+      "name": "Crimson",
+      "hex": "#DC143C",
+      "rgb": "220, 20, 60",
+      "usage": "Negative performance, alerts, below-target, critical issues",
+      "contrast_on_white": "5.5:1",
+      "wcag_aa": true
+    },
+    "neutral": {
+      "name": "Steel Blue",
+      "hex": "#4682B4",
+      "rgb": "70, 130, 180",
+      "usage": "Neutral information, base metrics, primary data series",
+      "contrast_on_white": "3.3:1",
+      "wcag_aa": false,
+      "note": "Use on light backgrounds only, or darken to #2E619B for text"
+    },
+    "warning": {
+      "name": "Dark Orange",
+      "hex": "#FF8C00",
+      "rgb": "255, 140, 0",
+      "usage": "Warnings, attention needed, approaching threshold",
+      "contrast_on_white": "2.9:1",
+      "wcag_aa": false,
+      "note": "Use with icon or pattern to supplement for colorblind accessibility"
+    },
+    "inactive": {
+      "name": "Slate Gray",
+      "hex": "#708090",
+      "rgb": "112, 128, 144",
+      "usage": "Inactive states, reference data, disabled, secondary context",
+      "contrast_on_white": "4.6:1",
+      "wcag_aa": true
+    }
+  },
+  "accessibility": {
+    "min_contrast_ratio": "4.5:1",
+    "colorblind_safe": "Supplement red/green distinction with pattern or icon",
+    "high_contrast_mode": "Test with Windows High Contrast mode",
+    "alt_text": "Always provide alt text for screen readers"
+  }
+}

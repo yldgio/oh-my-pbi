@@ -1,0 +1,42 @@
+{
+  "skill": "power-bi-report-design-consultation",
+  "version": "1.0",
+  "description": "Eval cases for Power BI report visualization design skill",
+  "test_cases": [
+    {
+      "id": "tc-report-001",
+      "name": "Executive dashboard chart selection",
+      "input": "I'm designing an executive dashboard showing: monthly revenue trend (12 months), top 5 product categories by revenue, current month vs target KPIs for 4 metrics, and regional breakdown. What charts should I use?",
+      "expected_output_contains": ["line chart", "bar", "KPI card", "map", "trend"],
+      "evaluation_notes": "Must recommend: line for 12-month trend, bar/column for top 5 categories, KPI cards for targets, consider map or bar for regions"
+    },
+    {
+      "id": "tc-report-002",
+      "name": "Accessibility improvement",
+      "input": "My Power BI report uses red and green colors to show performance vs target. Some users are colorblind. How should I fix this?",
+      "expected_output_contains": ["colorblind", "pattern", "icon", "contrast", "4.5:1", "text"],
+      "evaluation_notes": "Must recommend adding patterns/icons alongside color, not relying on red/green alone, check contrast ratios"
+    },
+    {
+      "id": "tc-report-003",
+      "name": "Too many visuals on page",
+      "input": "My report page has 20 visuals and feels cluttered. Users say it's overwhelming. How do I redesign it?",
+      "expected_output_contains": ["6-8", "drill-through", "bookmark", "tab", "white space", "hierarchy"],
+      "evaluation_notes": "Must recommend reducing to 6-8 visuals, using drill-through for detail, bookmarks or tabs for alternatives, information hierarchy"
+    },
+    {
+      "id": "tc-report-004",
+      "name": "Mobile layout design",
+      "input": "Our field sales team primarily uses Power BI on mobile phones. How should I design the report layout?",
+      "expected_output_contains": ["portrait", "44px", "touch", "card", "stacked", "mobile layout"],
+      "evaluation_notes": "Must address portrait orientation, touch targets (44px min), simplified navigation, card visuals, stacked layout"
+    },
+    {
+      "id": "tc-report-005",
+      "name": "Composition chart choice",
+      "input": "I want to show the breakdown of our revenue by 12 product categories as a percentage of total. What visualization is best?",
+      "expected_output_contains": ["treemap", "bar", "donut", "5-7", "category"],
+      "evaluation_notes": "Must flag that pie/donut is not ideal for 12 categories (max 5-7), recommend treemap or stacked bar as alternatives"
+    }
+  ]
+}
