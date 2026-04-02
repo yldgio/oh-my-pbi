@@ -1,0 +1,42 @@
+{
+  "skill": "power-bi-performance-troubleshooting",
+  "version": "1.0",
+  "description": "Eval cases for Power BI performance troubleshooting skill",
+  "test_cases": [
+    {
+      "id": "tc-perf-001",
+      "name": "Slow report page load - many visuals",
+      "input": "My Power BI report takes 25 seconds to load. The page has 15 visuals including 3 matrix tables, 5 bar charts, and complex slicers. Users are complaining. What should I do?",
+      "expected_output_contains": ["visual", "reduce", "6-8", "Performance Analyzer", "drill-through"],
+      "evaluation_notes": "Must identify too many visuals as primary cause, recommend reducing to 6-8, suggest Performance Analyzer, drill-through pattern"
+    },
+    {
+      "id": "tc-perf-002",
+      "name": "Slow DAX measure on large dataset",
+      "input": "This DAX measure is very slow on our 100M row Sales table:\nSlowMeasure = CALCULATE(SUM(Sales[Amount]), FILTER(ALL(Sales), Sales[Category] = SELECTEDVALUE(Slicer[Category])))\nHow do I fix it?",
+      "expected_output_contains": ["FILTER(ALL", "anti-pattern", "CALCULATE", "direct filter", "context"],
+      "evaluation_notes": "Must identify FILTER(ALL()) anti-pattern and replace with direct column filter in CALCULATE"
+    },
+    {
+      "id": "tc-perf-003",
+      "name": "Model refresh taking too long",
+      "input": "Our Power BI model refresh takes 4 hours for 50M rows. It refreshes completely every day. How can I speed this up?",
+      "expected_output_contains": ["incremental refresh", "partition", "date range", "RangeStart", "RangeEnd"],
+      "evaluation_notes": "Must recommend incremental refresh with RangeStart/RangeEnd parameters as primary solution"
+    },
+    {
+      "id": "tc-perf-004",
+      "name": "DirectQuery slow response",
+      "input": "We use DirectQuery against SQL Server. Simple aggregations take 8-10 seconds. The SQL Server has no specific indexes for Power BI queries.",
+      "expected_output_contains": ["index", "query folding", "aggregation table", "composite model", "database"],
+      "evaluation_notes": "Must recommend database-side optimization (indexes), verify query folding, consider aggregation tables or composite model"
+    },
+    {
+      "id": "tc-perf-005",
+      "name": "Capacity throttling symptoms",
+      "input": "During business hours (9am-12pm), our Power BI reports become very slow for all users simultaneously. Outside those hours it's fine. We're on Power BI Premium P1.",
+      "expected_output_contains": ["capacity", "CPU", "throttling", "concurrent", "Capacity Metrics", "schedule"],
+      "evaluation_notes": "Must identify concurrent usage / capacity throttling pattern, recommend Capacity Metrics App, stagger refresh schedules"
+    }
+  ]
+}

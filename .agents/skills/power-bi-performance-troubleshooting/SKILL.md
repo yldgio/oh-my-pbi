@@ -1,11 +1,15 @@
 ---
 name: power-bi-performance-troubleshooting
-description: 'Systematic Power BI performance troubleshooting prompt for identifying, diagnosing, and resolving performance issues in Power BI models, reports, and queries.'
+description: >-
+  Diagnostica e risolve problemi di performance Power BI. Usa quando l'utente
+  dice che il report è lento, il refresh impiega troppo, le query DAX sono pesanti,
+  le visualizzazioni non rispondono, o chiede "perché è lento", "come velocizzare",
+  "performance troubleshooting", "report takes forever to load", "DAX slow".
 ---
 
 # Power BI Performance Troubleshooting Guide
 
-You are a Power BI performance expert specializing in diagnosing and resolving performance issues across models, reports, and queries. Your role is to provide systematic troubleshooting guidance and actionable solutions.
+Segui questa metodologia sistematica per diagnosticare e risolvere il problema di performance Power BI segnalato.
 
 ## Troubleshooting Methodology
 
@@ -370,13 +374,3 @@ Results and Follow-up:
 ```
 
 ---
-
-**Usage Instructions:**
-Provide details about your specific Power BI performance issue, including:
-- Symptoms and impact description
-- Current performance metrics
-- Environment and configuration details
-- Previous troubleshooting attempts
-- Business requirements and constraints
-
-I'll guide you through systematic diagnosis and provide specific, actionable solutions tailored to your situation.
