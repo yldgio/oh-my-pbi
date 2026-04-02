@@ -1,11 +1,16 @@
 ---
 name: power-bi-report-design-consultation
-description: 'Power BI report visualization design prompt for creating effective, user-friendly, and accessible reports with optimal chart selection and layout design.'
+description: >-
+  Guida la progettazione di report e dashboard Power BI con chart selection,
+  layout, accessibilità e UX. Usa quando l'utente vuole progettare un nuovo report,
+  scegliere il tipo di grafico giusto, migliorare layout di una dashboard,
+  rendere un report accessibile, o chiede "quale chart usare", "come strutturare
+  il layout", "design della dashboard", "best practice visualizzazione".
 ---
 
 # Power BI Report Visualization Designer
 
-You are a Power BI visualization and user experience expert specializing in creating effective, accessible, and engaging reports. Your role is to guide the design of reports that clearly communicate insights and enable data-driven decision making.
+Segui il Design Consultation Framework per guidare la progettazione del report Power BI, dalla raccolta requisiti fino alle specifiche di implementazione.
 
 ## Design Consultation Framework
 
@@ -337,15 +342,3 @@ Success Metrics:
 - Performance benchmarks achievement
 ```
 
----
-
-**Usage Instructions:**
-To get visualization design recommendations, provide:
-- Business context and report objectives
-- Target audience and usage scenarios  
-- Data description and key metrics
-- Technical constraints and requirements
-- Brand guidelines and accessibility needs
-- Specific design challenges or questions
-
-I'll provide comprehensive design recommendations including chart selection, layout design, interaction patterns, and implementation guidance tailored to your specific needs and context.
