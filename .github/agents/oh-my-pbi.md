@@ -240,17 +240,23 @@ Run all applicable skills. Never pick just one.
 
 **Load skill:** `git-workflow`
 
-1. Run Repo State Gate (silent) — includes main/master check (see skill)
-2. **Main/master guard (always, before anything else):**
+1. **Verifica repo git (prima di tutto):**
+   - Esegui: `git rev-parse --git-dir 2>$null`
+   - Se fallisce (`$LASTEXITCODE -ne 0`): **nessun repo trovato**
+     - Chiedi: *"Non ho trovato un repository git in questa cartella. Vuoi (1) clonare un repo esistente o (2) inizializzare un nuovo repo qui?"*
+     - Segui la sezione **Inizializza o Clona un Repo** della skill `git-workflow`
+     - Dopo init/clone, ricomincia da punto 2.
+2. Run Repo State Gate (silent) — includes main/master check (see skill)
+3. **Main/master guard (always, before anything else):**
    - Check current branch: `git branch --show-current`
    - If branch is `main`, `master`, or `develop`:
      - Ask: *"Sei su `main`. Come si chiama la feature su cui lavoriamo oggi?"*
      - Take the user's answer → create `feature/{kebab-name}` from `origin/{base}` automatically
      - Announce: *"✅ Branch `feature/{name}` creato — puoi lavorare qui in sicurezza."*
      - Continue Phase 1 from the new branch.
-3. Announce state in plain English (1-2 sentences)
-4. Detect remote host (GitHub / Azure DevOps / unknown)
-5. Ask intent: new feature or continue existing?
+4. Announce state in plain English (1-2 sentences)
+5. Detect remote host (GitHub / Azure DevOps / unknown)
+6. Ask intent: new feature or continue existing?
 
 **New feature:**
 - Discover base branch from remote (`git remote show origin`)

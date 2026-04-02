@@ -54,6 +54,17 @@ Usa `git-workflow` quando l'utente:
 **Esegui prima di ogni operazione di scrittura** (crea branch, pull --rebase, push, commit, crea PR).
 
 ```powershell
+# 0. Verifica che siamo dentro un repository git
+git rev-parse --git-dir 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "⛔ STOP: Questa cartella non è un repository git."
+    Write-Host "   Opzioni:"
+    Write-Host "   • Inizializza un nuovo repo : git init"
+    Write-Host "   • Clona un repo esistente   : git clone <url>"
+    Write-Host "   Dimmi cosa preferisci fare."
+    return
+}
+
 # 1. Verifica operazioni in corso (merge/rebase/cherry-pick)
 $gitDir = git rev-parse --git-dir 2>$null
 $mergeHead  = Test-Path "$gitDir/MERGE_HEAD"
@@ -97,12 +108,48 @@ Write-Host "✅ Stato repo: branch=$branch | upstream=$upstream | remote=$remote
 ```
 
 **Stop immediato:**
-- Merge in corso · Rebase in corso · Cherry-pick in corso · Detached HEAD
+- **Cartella non è un repo git** (step 0) · Merge in corso · Rebase in corso · Cherry-pick in corso · Detached HEAD
 
 **Avvisi (comunica e chiedi conferma):**
 - Nessun upstream tracking
 - Branch locale indietro rispetto al remoto
 - Clone superficiale (`git rev-parse --is-shallow-repository`)
+
+---
+
+## Inizializza o Clona un Repo
+
+Usa questa sezione quando il Repo State Gate rileva che **non siamo in un repo git** (step 0 fallisce).
+
+### Clona un repo esistente
+
+```powershell
+# Chiedi l'URL del repo all'utente, poi:
+git clone <url> .          # clona nella cartella corrente
+# oppure
+git clone <url> nome-dir   # clona in una nuova cartella
+
+# Verifica
+git --no-pager log --oneline -3
+git remote -v
+```
+
+### Inizializza un nuovo repo locale
+
+```powershell
+git init
+git branch -M main         # rinomina il branch di default in main
+
+# Aggiungi un remoto (se l'utente ne ha uno)
+git remote add origin <url>
+git fetch origin
+
+# Primo commit se ci sono già file
+git add .
+# → delega il messaggio di commit alla skill git-commit
+```
+
+**Dopo init/clone:** esegui nuovamente il Repo State Gate per verificare lo stato pulito prima di procedere.
 
 ---
 
