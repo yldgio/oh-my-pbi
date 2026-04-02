@@ -250,19 +250,54 @@ Run all applicable skills. Never pick just one.
    > *Hai già un progetto Power BI / Fabric con Git Integration su GitHub o Azure DevOps?"*
 
    **→ SÌ, ho già un progetto remoto:**
-   > *"Ottimo! Incollami l'URL del repository (lo trovi su GitHub → Code → Clone, oppure su Azure DevOps → Repos → Clone)."*
-   - Esegui: `git clone <url> .` (clona nella cartella corrente)
+   > *"Ottimo! Poiché questa cartella contiene già i file di configurazione di oh-my-pbi, il modo più sicuro è clonare il tuo progetto in una **nuova cartella** e installarci oh-my-pbi sopra."*
+
+   ```powershell
+   # Chiedi il nome della nuova cartella (default: nome del repo)
+   # Chiedi l'URL del repository
+   git clone <url> <nome-cartella>
+   Set-Location <nome-cartella>
+   ```
+
+   - Se `git clone` fallisce (`$LASTEXITCODE -ne 0`): leggi l'errore e traduci in italiano:
+     - `Authentication failed` → *"Credenziali non valide. Prova a fare login con `gh auth login` (GitHub) oppure `az login` (Azure DevOps), poi riprova."*
+     - `Repository not found` → *"URL non trovato. Ricontrollalo e incollalo di nuovo."*
+     - Altri errori → mostra il messaggio originale e chiedi: *"Vuoi riprovare con un URL diverso?"*
+   - Se successo: copia i file oh-my-pbi dalla cartella precedente (`Copy-Item ../vecchia-cartella/.github, .agents, .vscode, skills-lock.json -Destination . -Recurse -Force`)
    - Verifica: `git log --oneline -3`
-   - Conferma: *"✅ Repository clonato. Sei pronto a lavorare!"*
+   - Conferma: *"✅ Repository clonato in `<nome-cartella>`. Apri questa cartella in VS Code per continuare."*
 
    **→ NO, parto da zero:**
    > *"Perfetto, inizializzo un repository locale per il tuo progetto."*
-   - Esegui: `git init && git branch -M main`
-   - Conferma: *"✅ Repository inizializzato."*
-   - Chiedi: *"Vuoi collegarlo a un repository remoto su GitHub o Azure DevOps? È consigliato per avere un backup e poter collaborare."*
-     - **SÌ** → *"Crea un repository vuoto su GitHub/ADO, poi incollami l'URL."*
-       - `git remote add origin <url>`
-       - *"✅ Remoto configurato. Quando salvi il tuo primo lavoro, lo carico lì automaticamente."*
+
+   ```powershell
+   git init
+   git branch -M main
+   ```
+
+   - Crea subito un `.gitignore` adatto a Power BI (senza chiedere — è sempre necessario):
+   ```powershell
+   @"
+   # Power BI / Fabric
+   *.pbix
+   *.pbit
+   *.tmp
+   .pbi/
+   # OS
+   .DS_Store
+   Thumbs.db
+   # Logs
+   *.log
+   "@ | Out-File -FilePath ".gitignore" -Encoding utf8
+   ```
+   - Conferma: *"✅ Repository inizializzato con .gitignore — i file .pbix e temporanei sono già protetti."*
+   - Chiedi: *"Vuoi collegarlo a un repository remoto? È consigliato per avere un backup e poter condividere il lavoro."*
+     - **SÌ** → Chiedi prima la piattaforma:
+       - *"GitHub o Azure DevOps?"*
+       - **GitHub** → *"Vai su [github.com/new](https://github.com/new), dai un nome al repository, NON spuntare 'Add README', clicca **Create repository**. Poi incollami l'URL che vedi nella pagina."*
+       - **Azure DevOps** → *"Vai su dev.azure.com → il tuo progetto → Repos → New repository, NON spuntare 'Add a README', clicca **Create**. Poi incollami l'URL."*
+       - Dopo URL ricevuto: `git remote add origin <url>`
+       - Conferma: *"✅ Remoto configurato. Quando salvi il tuo primo lavoro, lo carico su <host> automaticamente."*
      - **NO** → *"✅ Pronti! Lavoriamo in locale per ora — potrai aggiungere un remoto in qualsiasi momento."*
 
    Dopo init/clone: ricomincia da punto 2.

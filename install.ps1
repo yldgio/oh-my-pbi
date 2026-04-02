@@ -92,9 +92,9 @@ function Invoke-OhMyPbiInstall {
         $gitAvailable = $null -ne (Get-Command git -ErrorAction SilentlyContinue)
         if (-not $gitAvailable) {
             Write-Host ""
-            Write-Warn "Git non e' installato sul sistema."
+            Write-Warn "Git non è installato sul sistema."
             Write-Host ""
-            Write-Host "  Git e' necessario per usare oh-my-pbi." -ForegroundColor White
+            Write-Host "  Git è necessario per usare oh-my-pbi." -ForegroundColor White
             Write-Host "  Per installarlo scegli uno di questi metodi:" -ForegroundColor White
             Write-Host ""
             Write-Host "    Metodo 1 (consigliato — apri un terminale e incolla):" -ForegroundColor DarkGray
@@ -113,7 +113,7 @@ function Invoke-OhMyPbiInstall {
         # 1c. Detect repo state and advise accordingly
         $hasGitRepo = Test-Path (Join-Path $targetPath '.git')
         if (-not $hasGitRepo) {
-            Write-Warn "Questa cartella non e' ancora un repository git."
+            Write-Warn "Questa cartella non è ancora un repository git."
             Write-Host ""
             Write-Host "  Nessun problema — i file di oh-my-pbi verranno installati ora." -ForegroundColor DarkGray
             Write-Host "  Dopo l'installazione apri VS Code e scrivi in Copilot Chat:" -ForegroundColor DarkGray
@@ -237,4 +237,5 @@ function Invoke-OhMyPbiInstall {
 }
 
 Invoke-OhMyPbiInstall @PSBoundParameters
+
 
