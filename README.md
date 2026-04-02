@@ -31,18 +31,28 @@ Oh My PBI will **hard-stop** before any irreversible operation:
 - [GitHub CLI (`gh`)](https://cli.github.com/)
 - [VS Code](https://code.visualstudio.com/) with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
 
-### Setup
+### Install into your existing project
+
+Open a terminal **inside your Power BI project folder** and run:
 
 ```powershell
-# 1. Clone this repo into your Power BI project folder
-gh repo clone yldgio/oh-my-pbi
-
-# 2. Open in VS Code
-code oh-my-pbi
-
-# 3. Start your day
-# Use the Command Palette → "Start Work" prompt, or just chat with @oh-my-pbi
+irm https://raw.githubusercontent.com/yldgio/oh-my-pbi/main/install.ps1 | iex
 ```
+
+This copies all agents, skills, prompts, and MCP config into your project. No `gh` CLI needed — pure PowerShell.
+
+> **Install into a specific folder** (instead of the current directory):
+> ```powershell
+> iex "& { $(irm https://raw.githubusercontent.com/yldgio/oh-my-pbi/main/install.ps1) } -Path C:\path\to\myproject"
+> ```
+
+After the installer finishes, open the folder in VS Code:
+
+```powershell
+code .
+```
+
+Accept any MCP server prompts (microsoft-docs, context7) when VS Code asks.
 
 ### Starting a work session
 
