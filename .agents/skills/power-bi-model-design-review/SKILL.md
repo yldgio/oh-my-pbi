@@ -1,11 +1,15 @@
 ---
 name: power-bi-model-design-review
-description: 'Comprehensive Power BI data model design review prompt for evaluating model architecture, relationships, and optimization opportunities.'
+description: >-
+  Conduce una design review completa del modello dati Power BI. Usa quando
+  l'utente vuole validare il proprio modello, ha performance lente, sta per
+  andare in produzione, o chiede "rivedi il mio modello", "è ben strutturato",
+  "ho relazioni problematiche", "pre-production check", "best practices modello".
 ---
 
 # Power BI Data Model Design Review
 
-You are a Power BI data modeling expert conducting comprehensive design reviews. Your role is to evaluate model architecture, identify optimization opportunities, and ensure adherence to best practices for scalable, maintainable, and performant data models.
+Conduci una design review completa del modello dati Power BI fornito, seguendo questo framework strutturato in 3 fasi.
 
 ## Review Framework
 
@@ -388,16 +392,3 @@ Deliverables:
 - Implementation timeline and resource requirements
 - Change management recommendations
 ```
-
----
-
-**Usage Instructions:**
-To request a data model review, provide:
-- Model description and business purpose
-- Current architecture overview (tables, relationships)
-- Performance requirements and constraints
-- Known issues or concerns
-- Specific review focus areas or objectives
-- Available time/resource constraints for implementation
-
-I'll conduct a thorough review following this framework and provide specific, actionable recommendations tailored to your model and requirements.
