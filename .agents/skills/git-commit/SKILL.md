@@ -1,124 +1,193 @@
 ---
 name: git-commit
-description: 'Execute git commit with conventional commit message analysis, intelligent staging, and message generation. Use when user asks to commit changes, create a git commit, or mentions "/commit". Supports: (1) Auto-detecting type and scope from changes, (2) Generating conventional commit messages from diff, (3) Interactive commit with optional type/scope/description overrides, (4) Intelligent file staging for logical grouping'
+description: >
+  Crea commit git semantici con messaggi Conventional Commits. Usa quando l'utente chiede
+  di committare, salvare modifiche, o creare un commit — anche in italiano: "committa",
+  "fai commit", "salva le modifiche su git", "crea un commit", "/commit",
+  "metti in commit", "commit delle modifiche". Supporta: rilevamento automatico
+  tipo/scope dal diff, generazione messaggio convenzionale, staging intelligente,
+  trailer Co-authored-by obbligatorio, sintassi PowerShell nativa su Windows.
 license: MIT
-allowed-tools: Bash
+allowed-tools: Bash, runCommands
 ---
 
-# Git Commit with Conventional Commits
+# Git Commit — Conventional Commits
 
-## Overview
+## Quando Usare
 
-Create standardized, semantic git commits using the Conventional Commits specification. Analyze the actual diff to determine appropriate type, scope, and message.
+Usa questo skill quando l'utente:
+- Dice "committa", "fai un commit", "salva le modifiche", "crea un commit", "/commit"
+- Ha modifiche staged o unstaged da salvare nel repository
+- Vuole un messaggio di commit semantico/convenzionale
 
-## Conventional Commit Format
+**Non usare** per:
+- Visualizzare la cronologia commit → `git log`
+- Modificare commit già pushati → admin mode
+- Operazioni di branch o push → delega a `git-workflow`
+
+---
+
+## Formato Conventional Commit
 
 ```
-<type>[optional scope]: <description>
+<tipo>[scope opzionale]: <descrizione>
 
-[optional body]
+[body opzionale]
 
-[optional footer(s)]
+[footer opzionale]
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```
 
-## Commit Types
+> ⚠️ Il trailer `Co-authored-by` è **obbligatorio** su ogni commit. Non ometterlo mai.
 
-| Type       | Purpose                        |
+## Tipi di Commit
+
+| Tipo       | Uso                            |
 | ---------- | ------------------------------ |
-| `feat`     | New feature                    |
-| `fix`      | Bug fix                        |
-| `docs`     | Documentation only             |
-| `style`    | Formatting/style (no logic)    |
-| `refactor` | Code refactor (no feature/fix) |
-| `perf`     | Performance improvement        |
-| `test`     | Add/update tests               |
-| `build`    | Build system/dependencies      |
-| `ci`       | CI/config changes              |
-| `chore`    | Maintenance/misc               |
-| `revert`   | Revert commit                  |
+| `feat`     | Nuova funzionalità             |
+| `fix`      | Correzione bug                 |
+| `docs`     | Solo documentazione            |
+| `style`    | Formattazione (nessuna logica) |
+| `refactor` | Refactoring (no feat/fix)      |
+| `perf`     | Miglioramento performance      |
+| `test`     | Aggiunta/modifica test         |
+| `build`    | Build/dipendenze               |
+| `ci`       | Configurazione CI              |
+| `chore`    | Manutenzione varia             |
+| `revert`   | Revert di un commit            |
 
 ## Breaking Changes
 
 ```
-# Exclamation mark after type/scope
-feat!: remove deprecated endpoint
+# Punto esclamativo dopo tipo/scope
+feat!: rimosso endpoint deprecato
 
-# BREAKING CHANGE footer
-feat: allow config to extend other configs
+# Footer BREAKING CHANGE
+feat: la chiave 'extends' supporta array
 
-BREAKING CHANGE: `extends` key behavior changed
+BREAKING CHANGE: il comportamento di 'extends' è cambiato
 ```
+
+---
 
 ## Workflow
 
-### 1. Analyze Diff
+### 1. Controlla Stato e Diff
 
-```bash
-# If files are staged, use staged diff
-git diff --staged
-
-# If nothing staged, use working tree diff
-git diff
-
-# Also check status
+**PowerShell (Windows — preferito):**
+```powershell
 git status --porcelain
+git diff --staged   # Se ci sono file staged
+git diff            # Modifiche non staged
 ```
 
-### 2. Stage Files (if needed)
-
-If nothing is staged or you want to group changes differently:
-
+**Bash:**
 ```bash
-# Stage specific files
+git status --porcelain
+git diff --staged
+git diff
+```
+
+**Casi speciali da gestire:**
+- **Nessuna modifica** (working tree pulito) → avvisa l'utente, non procedere
+- **File non tracciati (untracked)** → chiedi all'utente se includerli
+- **Solo file staged** → usa `git diff --staged` per analisi
+
+### 2. Staging (se necessario)
+
+**PowerShell:**
+```powershell
+git add path/to/file1 path/to/file2   # File specifici
+git add -A                             # Tutto
+```
+
+**Bash:**
+```bash
 git add path/to/file1 path/to/file2
-
-# Stage by pattern
-git add *.test.*
-git add src/components/*
-
-# Interactive staging
-git add -p
+git add -A
+git add -p   # Staging interattivo per scegliere blocchi
 ```
 
-**Never commit secrets** (.env, credentials.json, private keys).
+> ⛔ Non committare mai: `.env`, credenziali, chiavi private, token API.
 
-### 3. Generate Commit Message
+### 3. Genera il Messaggio
 
-Analyze the diff to determine:
+Analizza il diff per determinare:
+- **Tipo**: Che tipo di modifica è?
+- **Scope**: Quale area/modulo è coinvolto?
+- **Descrizione**: Sintesi imperativa <72 caratteri
 
-- **Type**: What kind of change is this?
-- **Scope**: What area/module is affected?
-- **Description**: One-line summary of what changed (present tense, imperative mood, <72 chars)
+### 4. Mostra e Attendi Conferma *(obbligatorio)*
 
-### 4. Execute Commit
+Prima di eseguire, mostra sempre il messaggio proposto:
 
+```
+📝 Messaggio di commit proposto:
+
+feat(auth): aggiunge endpoint di login
+
+Implementa autenticazione JWT con bcrypt per password hashing.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+Procedo? [S/n]
+```
+
+Se l'utente vuole modificare: chiedi cosa cambiare e rigenera.
+
+### 5. Esegui il Commit
+
+**PowerShell (Windows):**
+```powershell
+git commit -m @"
+feat(auth): aggiunge endpoint di login
+
+Implementa autenticazione JWT con bcrypt.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+"@
+```
+
+**Bash:**
 ```bash
-# Single line
-git commit -m "<type>[scope]: <description>"
-
-# Multi-line with body/footer
 git commit -m "$(cat <<'EOF'
-<type>[scope]: <description>
+feat(auth): aggiunge endpoint di login
 
-<optional body>
+Implementa autenticazione JWT con bcrypt.
 
-<optional footer>
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 EOF
 )"
 ```
 
+---
+
 ## Best Practices
 
-- One logical change per commit
-- Present tense: "add" not "added"
-- Imperative mood: "fix bug" not "fixes bug"
-- Reference issues: `Closes #123`, `Refs #456`
-- Keep description under 72 characters
+- Un cambiamento logico per commit
+- Imperativo presente: "aggiunge" non "aggiunto"
+- Descrizione sotto i 72 caratteri
+- Riferimento issues: `Closes #123`, `Refs #456`
+- Il trailer `Co-authored-by` è sempre obbligatorio
 
-## Git Safety Protocol
+---
 
-- NEVER update git config
-- NEVER run destructive commands (--force, hard reset) without explicit request
-- NEVER skip hooks (--no-verify) unless user asks
-- NEVER force push to main/master
-- If commit fails due to hooks, fix and create NEW commit (don't amend)
+## Sicurezza Git
+
+- ❌ Non modificare `git config`
+- ❌ Non usare `--force` o `reset --hard` senza richiesta esplicita
+- ❌ Non bypassare hook (`--no-verify`) — mai
+- ❌ Non fare force push su main/master
+- ✅ Se il commit fallisce per un hook: correggi il problema, `git add`, crea un **nuovo** commit (non `--amend`)
+
+---
+
+## Troubleshooting
+
+| Errore | Causa | Soluzione |
+|--------|-------|-----------|
+| "nothing to commit, working tree clean" | Nessuna modifica | Verifica con `git status`; potrebbe essere già committato |
+| Commit bloccato da pre-commit hook | Hook ha rilevato un problema | Correggi i file segnalati, `git add`, riprova |
+| "please tell me who you are" | Identità git non configurata | `git config user.email "..."` e `git config user.name "..."` |
+| Vuole modificare l'ultimo commit | Amend richiesto | Solo se **non** già pushato: `git commit --amend -m "..."` (admin mode) |
+| Troppi file da committare | Diff molto grande | Suggerisci staging interattivo `git add -p` per commit logici |
