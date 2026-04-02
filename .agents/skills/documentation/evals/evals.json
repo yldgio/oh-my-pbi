@@ -1,0 +1,102 @@
+{
+  "skill_name": "documentation",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "full-docs-flow",
+      "prompt": "Ho finito la feature sales YTD. Ho aggiunto la misura 'Sales YTD' che usa TOTALYTD e una nuova pagina report 'YTD Performance'. Documenta tutto: scrivi la descrizione per la PR, aggiorna il changelog e crea il design doc.",
+      "expected_output": "Three artifacts: a PR description with Summary/Changes/Business Impact/Testing sections, a CHANGELOG.md entry under [Unreleased] with Added items, and a docs/sales-ytd.md design note with What Was Built / Why / Key Decisions / Measures Added sections.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "full-1",
+          "text": "Output contains a PR description with a Summary section",
+          "category": "pr-description"
+        },
+        {
+          "id": "full-2",
+          "text": "Output contains a PR description with a Testing Done checklist",
+          "category": "pr-description"
+        },
+        {
+          "id": "full-3",
+          "text": "Output contains a CHANGELOG entry with '## [Unreleased]' or '### Added'",
+          "category": "changelog"
+        },
+        {
+          "id": "full-4",
+          "text": "Output contains or references a feature design note (docs/ file or ## What Was Built section)",
+          "category": "design-note"
+        },
+        {
+          "id": "full-5",
+          "text": "Output mentions the 'Sales YTD' measure specifically",
+          "category": "content-accuracy"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "changelog-only",
+      "prompt": "Aggiorna il changelog. Questa settimana ho: aggiunto la misura MTD Revenue, modificato la relazione tra FactSales e DimDate per usare cross-filter attivo, e fixato un bug sul conteggio clienti in scenari multi-regione.",
+      "expected_output": "A CHANGELOG.md update with Added, Changed, and Fixed sections under [Unreleased], plus a PowerShell script or command using Update-Changelog.ps1 to perform the actual update — not just a standalone markdown block.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "cl-1",
+          "text": "Output contains '### Added' with the MTD Revenue measure",
+          "category": "changelog"
+        },
+        {
+          "id": "cl-2",
+          "text": "Output contains '### Changed' with the DimDate relationship change",
+          "category": "changelog"
+        },
+        {
+          "id": "cl-3",
+          "text": "Output contains '### Fixed' with the customer count bug",
+          "category": "changelog"
+        },
+        {
+          "id": "cl-4",
+          "text": "Output includes PowerShell code or instructions to append to CHANGELOG.md (not just a standalone markdown block)",
+          "category": "workflow"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "pr-description-only",
+      "prompt": "Scrivi la descrizione per la PR. Sono sul branch feature/customer-segmentation. Ho aggiunto: una tabella DimSegmento con 4 colonne, 3 nuove misure DAX (Revenue per Segment, Customer Count per Segment, Avg Order Value), e un visual a matrice nella pagina Segmentation Analysis.",
+      "expected_output": "A complete PR description following the template: Summary, Changes (Semantic Model + Reports sections), Business Impact, Testing Done checklist, Notes for Reviewers.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "pr-1",
+          "text": "Output contains a '## Summary' or 'Summary' section with a plain-English description",
+          "category": "pr-description"
+        },
+        {
+          "id": "pr-2",
+          "text": "Output contains a '### Semantic Model' section listing measures or tables",
+          "category": "pr-description"
+        },
+        {
+          "id": "pr-3",
+          "text": "Output contains a '### Reports' section mentioning the matrix visual or Segmentation Analysis page",
+          "category": "pr-description"
+        },
+        {
+          "id": "pr-4",
+          "text": "Output contains a Testing Done checklist with at least 3 items",
+          "category": "pr-description"
+        },
+        {
+          "id": "pr-5",
+          "text": "Output mentions all 3 measures (Revenue per Segment, Customer Count per Segment, Avg Order Value)",
+          "category": "content-accuracy"
+        }
+      ]
+    }
+  ]
+}

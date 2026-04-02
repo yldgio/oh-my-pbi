@@ -2,10 +2,16 @@
 name: documentation
 description: >
   Generate and maintain documentation artifacts for Power BI / Fabric work.
-  Produces three outputs per feature: PR description (from git log + diff),
-  CHANGELOG.md entry (Keep a Changelog format), and a docs/{feature}.md design
-  note. Also covers DAX measure documentation and model change notes.
-  Load when user says "document this", "write up what I did", or after a PR is opened.
+  Every completed feature produces THREE artifacts together: PR description
+  (from git log + diff), CHANGELOG.md entry (Keep a Changelog format), and a
+  docs/{feature}.md design note. Also covers DAX measure documentation and
+  model change notes. Load this skill whenever the user says "document this",
+  "write up what I did", "write the PR description", "update the changelog",
+  "add a changelog entry", "create release notes", "write the design doc",
+  "document the measures", "write the PR body", "close out this feature",
+  "documenta tutto", or after any feature work is complete and needs to be
+  recorded. When the user asks to document a feature, always produce all three
+  artifacts unless they explicitly ask for only one.
 license: MIT
 allowed-tools: runCommands, editFiles
 ---
@@ -14,7 +20,7 @@ allowed-tools: runCommands, editFiles
 
 ## Overview
 
-Every completed feature produces three documentation artifacts:
+Every completed feature produces **three documentation artifacts** — produce all three together unless the user explicitly asks for only one:
 
 | Artifact | File | Purpose |
 |----------|------|---------|
@@ -22,25 +28,38 @@ Every completed feature produces three documentation artifacts:
 | CHANGELOG entry | `CHANGELOG.md` | Project history for stakeholders |
 | Feature design note | `docs/{feature-name}.md` | Technical record for future maintainers |
 
+> **Bundled resources in this skill:**
+> - `scripts/Get-GitContext.ps1` — gathers git context (commits + categorised files) for the PR description
+> - `scripts/Update-Changelog.ps1` — safely inserts entries into CHANGELOG.md
+> - `templates/pr-description.md` — the PR description template to fill in
+
 ---
 
 ## Part 1 — PR Description
 
-### Gather context from git
+### Gather context from git — run this first
+
+**Before filling any section of the PR template, run the bundled script:**
 
 ```powershell
-# Commits on this branch (not on base)
+.\.agents\skills\documentation\scripts\Get-GitContext.ps1
+```
+
+This prints commits, categorised changed files (Semantic Model / Reports / Dataflows / Other), branch, and author. Base all PR content on this output — do not populate from memory.
+
+If the script is not accessible, fall back to running these commands directly:
+
+```powershell
 $baseBranch = git remote show origin | Select-String "HEAD branch" | ForEach-Object { ($_ -split ":\s*")[1].Trim() }
-git log origin/$baseBranch..HEAD --oneline
-
-# Files changed
-git diff --stat origin/$baseBranch..HEAD
-
-# Full diff (for analysis)
-git diff origin/$baseBranch..HEAD
+git --no-pager log origin/$baseBranch..HEAD --oneline
+git --no-pager diff --stat origin/$baseBranch..HEAD
 ```
 
 ### PR Description Template
+
+Read and fill in the template at `.agents\skills\documentation\templates\pr-description.md` (repo-root-relative path).
+
+> **Important naming**: always use `### Semantic Model` (not "Data Model", "Dataset", or "DAX Measures") — this is the correct Power BI / Fabric term.
 
 ```markdown
 ## Summary
@@ -88,20 +107,13 @@ git diff origin/$baseBranch..HEAD
 [Optional — edge cases, known limitations, related future work]
 ```
 
-### Populating from git log
+### Populating from git context
 
-```powershell
-# Auto-generate changes section from commit messages
-$commits = git log origin/$baseBranch..HEAD --pretty=format:"%s"
-$commits | ForEach-Object { "- $_" }
-
-# Categorize changed files
-$changedFiles = git diff --name-only origin/$baseBranch..HEAD
-$modelFiles = $changedFiles | Where-Object { $_ -match "\.bim$|SemanticModel|\.tmdl$" }
-$reportFiles = $changedFiles | Where-Object { $_ -match "\.pbir$|Report/" }
-$dataflowFiles = $changedFiles | Where-Object { $_ -match "DataflowRefreshable|mashup\.json" }
-$pipelineFiles = $changedFiles | Where-Object { $_ -match "DataPipeline|pipeline-content\.json" }
-```
+The output of `Get-GitContext.ps1` maps directly to the template sections:
+- **Commits** → narrative for `## Summary` and entries under each `### Changes` subsection
+- **Semantic Model files** → `### Semantic Model` bullets
+- **Report files** → `### Reports` bullets
+- **Dataflow/Pipeline files** → `### Dataflows / Pipelines` bullets
 
 ---
 
@@ -149,44 +161,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 | `Deprecated` | Items that will be removed in a future update |
 | `Security` | Fixes to RLS, permission, or data exposure issues |
 
-### Append workflow
+### Workflow
+
+**Use the bundled script** — it handles file creation, the [Unreleased] guard, and correct insertion in one step:
 
 ```powershell
-# Read current CHANGELOG
-$changelog = Get-Content "CHANGELOG.md" -Raw
-
-# Find the [Unreleased] section
-$unreleasedPattern = "## \[Unreleased\]"
-$insertionPoint = $changelog.IndexOf($unreleasedPattern) + "## [Unreleased]".Length
-
-# New entry to insert
-$newEntry = @"
-
-### Added
-- $newFeatureDescription
-
-"@
-
-# Insert after [Unreleased] header
-$updatedChangelog = $changelog.Substring(0, $insertionPoint) + $newEntry + $changelog.Substring($insertionPoint)
-$updatedChangelog | Set-Content "CHANGELOG.md"
+.\.agents\skills\documentation\scripts\Update-Changelog.ps1 `
+    -Added   "Description of what was added" `
+    -Changed "Description of what changed" `
+    -Fixed   "Description of what was fixed"
 ```
 
-### Initialize CHANGELOG.md (if not present)
+Pass only the categories that apply. Multiple entries per category are supported:
 
 ```powershell
-$template = @"
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
-## [Unreleased]
-
-"@
-$template | Set-Content "CHANGELOG.md"
+.\.agents\skills\documentation\scripts\Update-Changelog.ps1 `
+    -Added "Sales YTD measure: year-to-date revenue using TOTALYTD" `
+    -Added "YTD Performance report page with KPI cards and line chart"
 ```
+
+The script automatically:
+1. Creates `CHANGELOG.md` if it doesn't exist
+2. Adds `## [Unreleased]` if the section is missing
+3. Inserts entries under the correct category headers
+4. Never duplicates or overwrites existing content
 
 ---
 
@@ -198,10 +196,14 @@ $template | Set-Content "CHANGELOG.md"
 # Create docs directory if needed
 New-Item -ItemType Directory -Force "docs" | Out-Null
 
-# Feature name from branch name
-$branchName = git branch --show-current
-$featureName = $branchName -replace "^feature/", ""
-$docPath = "docs/$featureName.md"
+# Derive feature name from branch — normalize to a URL-safe slug
+$branchName  = git branch --show-current
+$featureName = $branchName -replace "^(feature|bugfix|chore|fix)/", ""
+$featureName = $featureName.ToLower() -replace "[^a-z0-9-]", "-" -replace "-{2,}", "-" -replace "^-|-$", ""
+$docPath     = "docs/$featureName.md"
+
+$today  = (Get-Date).ToString("yyyy-MM-dd")
+$author = git config user.name
 ```
 
 ### Feature Design Note Template
@@ -209,10 +211,10 @@ $docPath = "docs/$featureName.md"
 ```markdown
 # {Feature Name}
 
-**Date:** {YYYY-MM-DD}
+**Date:** {today}
 **Branch:** {branch-name}
-**PR:** #{pr-number}
-**Author:** {name}
+**PR:** #{pr-number — fill in after PR is created, or TBD}
+**Author:** {author from git config user.name}
 
 ## What Was Built
 
@@ -264,6 +266,8 @@ $docPath = "docs/$featureName.md"
 
 ## Part 4 — DAX Measure Documentation
 
+> **Note:** This is a **development-time** task — measure descriptions should be set while building the model, not at documentation time. This skill checks at close-out that it was done, and fills any gaps if needed.
+
 When adding measures to a model, document them inline using Tabular Model description fields.
 
 ### Format for measure descriptions
@@ -273,6 +277,10 @@ When adding measures to a model, document them inline using Tabular Model descri
 Formula pattern: [TOTALYTD / CALCULATE+FILTER / etc.]
 Depends on: [DimDate[Date], FactSales[Amount]]
 ```
+
+### Setting descriptions
+
+If Tabular Editor CLI is available, descriptions can be set programmatically. Otherwise, note them as a manual step and provide the text to copy into the Properties pane in Power BI Desktop or Tabular Editor GUI.
 
 ### Bulk measure documentation checklist
 
@@ -287,13 +295,15 @@ For every new measure added in a feature:
 
 ## Part 5 — Documentation Checklist
 
-Run at the end of every Phase 5 (Documentation):
+Run this at the end of every documentation session to confirm all artifacts are complete:
 
 ```
 [ ] PR description written and attached to PR
-[ ] CHANGELOG.md updated (entry under [Unreleased])
-[ ] docs/{feature-name}.md created
+[ ] CHANGELOG.md updated (entry under [Unreleased]) — ran Update-Changelog.ps1
+[ ] docs/{feature-name}.md created with all sections filled
 [ ] All new measures have descriptions in the model
 [ ] No TODO/FIXME comments left in JSON files
 [ ] .gitignore updated if new file types introduced
 ```
+
+**When producing full documentation (all three artifacts), work through Parts 1 → 2 → 3 in order, then run this checklist before presenting output to the user.**
