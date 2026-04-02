@@ -5,7 +5,10 @@ description: >
   Produces three outputs per feature: PR description (from git log + diff),
   CHANGELOG.md entry (Keep a Changelog format), and a docs/{feature}.md design
   note. Also covers DAX measure documentation and model change notes.
-  Load when user says "document this", "write up what I did", or after a PR is opened.
+  Use when the user says "document this", "write up what I did", "write the PR
+  description", "update the changelog", "add a changelog entry", "create release
+  notes", "write the design doc", "document the measures", "write the PR body",
+  or after any feature work is complete and needs to be recorded.
 license: MIT
 allowed-tools: runCommands, editFiles
 ---
@@ -26,7 +29,9 @@ Every completed feature produces three documentation artifacts:
 
 ## Part 1 — PR Description
 
-### Gather context from git
+### Gather context from git — run this first
+
+**Before filling any section of the PR template, run these commands and base all content on their output. Do not populate from memory.**
 
 ```powershell
 # Commits on this branch (not on base)
@@ -149,15 +154,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 | `Deprecated` | Items that will be removed in a future update |
 | `Security` | Fixes to RLS, permission, or data exposure issues |
 
-### Append workflow
+### Workflow
+
+**Step 1 — Ensure CHANGELOG.md exists**
+
+```powershell
+if (-not (Test-Path "CHANGELOG.md")) {
+    $template = @"
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [Unreleased]
+
+"@
+    $template | Set-Content "CHANGELOG.md"
+}
+```
+
+**Step 2 — Append new entry under [Unreleased]**
 
 ```powershell
 # Read current CHANGELOG
 $changelog = Get-Content "CHANGELOG.md" -Raw
 
-# Find the [Unreleased] section
-$unreleasedPattern = "## \[Unreleased\]"
-$insertionPoint = $changelog.IndexOf($unreleasedPattern) + "## [Unreleased]".Length
+# Guard: ensure [Unreleased] section exists; add it if missing
+$unreleasedHeader = "## [Unreleased]"
+if ($changelog.IndexOf($unreleasedHeader) -lt 0) {
+    # Prepend [Unreleased] section just after the first heading (# Changelog line)
+    $changelog = $changelog -replace "^(# .+\r?\n)", "`$1`n## [Unreleased]`n"
+    $changelog | Set-Content "CHANGELOG.md"
+    $changelog = Get-Content "CHANGELOG.md" -Raw
+}
+
+# Insert new entry immediately after the [Unreleased] header
+$insertionPoint = $changelog.IndexOf($unreleasedHeader) + $unreleasedHeader.Length
 
 # New entry to insert
 $newEntry = @"
@@ -172,22 +205,6 @@ $updatedChangelog = $changelog.Substring(0, $insertionPoint) + $newEntry + $chan
 $updatedChangelog | Set-Content "CHANGELOG.md"
 ```
 
-### Initialize CHANGELOG.md (if not present)
-
-```powershell
-$template = @"
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
-## [Unreleased]
-
-"@
-$template | Set-Content "CHANGELOG.md"
-```
-
 ---
 
 ## Part 3 — Feature Design Note
@@ -198,10 +215,17 @@ $template | Set-Content "CHANGELOG.md"
 # Create docs directory if needed
 New-Item -ItemType Directory -Force "docs" | Out-Null
 
-# Feature name from branch name
+# Feature name from branch name — always normalize to a safe slug
 $branchName = git branch --show-current
-$featureName = $branchName -replace "^feature/", ""
+$featureName = $branchName -replace "^(feature|bugfix|chore|fix)/", ""
+# Normalize: lowercase, replace anything that is not a-z, 0-9, or hyphen with a hyphen
+$featureName = $featureName.ToLower() -replace "[^a-z0-9-]", "-" -replace "-{2,}", "-" -replace "^-|-$", ""
 $docPath = "docs/$featureName.md"
+
+# Populate metadata
+$today = (Get-Date).ToString("yyyy-MM-dd")
+$author = git config user.name
+# pr-number: fill in the actual PR number once it is created, or leave as TBD
 ```
 
 ### Feature Design Note Template
@@ -209,10 +233,10 @@ $docPath = "docs/$featureName.md"
 ```markdown
 # {Feature Name}
 
-**Date:** {YYYY-MM-DD}
+**Date:** {today}
 **Branch:** {branch-name}
-**PR:** #{pr-number}
-**Author:** {name}
+**PR:** #{pr-number — fill in after PR is created, or TBD}
+**Author:** {author from git config user.name}
 
 ## What Was Built
 
@@ -264,6 +288,8 @@ $docPath = "docs/$featureName.md"
 
 ## Part 4 — DAX Measure Documentation
 
+> **Note:** This is a **development-time** task — measure descriptions should be set while building the model, not at documentation time. This skill checks at close-out that it was done, and fills any gaps if needed.
+
 When adding measures to a model, document them inline using Tabular Model description fields.
 
 ### Format for measure descriptions
@@ -273,6 +299,10 @@ When adding measures to a model, document them inline using Tabular Model descri
 Formula pattern: [TOTALYTD / CALCULATE+FILTER / etc.]
 Depends on: [DimDate[Date], FactSales[Amount]]
 ```
+
+### Setting descriptions
+
+If Tabular Editor CLI is available, descriptions can be set programmatically. Otherwise, note them as a manual step and provide the text to copy into the Properties pane in Power BI Desktop or Tabular Editor GUI.
 
 ### Bulk measure documentation checklist
 
@@ -287,7 +317,7 @@ For every new measure added in a feature:
 
 ## Part 5 — Documentation Checklist
 
-Run at the end of every Phase 5 (Documentation):
+Run at the end of every documentation session:
 
 ```
 [ ] PR description written and attached to PR
