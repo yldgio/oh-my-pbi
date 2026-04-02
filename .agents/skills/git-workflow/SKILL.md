@@ -55,15 +55,24 @@ if (-not $headRef) {
     return
 }
 
-# 3. Check upstream tracking
+# 3. Check if on a protected branch (main / master / develop)
+$branch = git branch --show-current
+$protectedBranches = @("main", "master", "develop")
+if ($protectedBranches -contains $branch) {
+    Write-Host "⛔ STOPPED: You are on '$branch'."
+    Write-Host "   Working directly on a protected branch is not allowed."
+    Write-Host "   The agent will create a feature branch — tell it what you're working on."
+    return
+}
+
+# 4. Check upstream tracking
 $upstream = git rev-parse --abbrev-ref "@{upstream}" 2>$null
 if (-not $upstream) {
     Write-Host "⚠️  WARNING: Current branch has no upstream tracking branch."
     Write-Host "   First push will require: git push --set-upstream origin <branch>"
 }
 
-# 4. Report current state
-$branch = git branch --show-current
+# 5. Report current state
 $remote = (git remote -v 2>$null | Select-Object -First 1)
 Write-Host "✅ Repo state: branch=$branch | upstream=$upstream | remote=$remote"
 ```
@@ -179,15 +188,26 @@ if ($LASTEXITCODE -ne 0) {
 ## Push
 
 ```powershell
-# Always show destination before pushing
-$branch = git branch --show-current
+# 1. Validate remote — must be known before pushing
 $remote = git remote get-url origin 2>$null
-Write-Host "About to push to:"
+if (-not $remote) {
+    Write-Host "⛔ STOPPED: No remote named 'origin' found."
+    Write-Host "   Add a remote first: git remote add origin <url>"
+    return
+}
+
+# 2. Always announce destination and wait for explicit user confirmation
+$branch = git branch --show-current
+Write-Host "Sto per inviare le modifiche a:"
 Write-Host "  Remote: $remote"
 Write-Host "  Branch: $branch"
-Write-Host "Confirm? (y/n)"
-# Wait for user confirmation
+# REQUIRED: Agent must ask the user "Procedo?" and wait for an affirmative
+# answer before executing the push below. Do NOT push without confirmation.
+```
 
+**Agent MUST ask for confirmation before pushing** — use `ask_user` (or equivalent) with the destination details above. Only execute the push after the user confirms.
+
+```powershell
 # First push (sets upstream)
 git push --set-upstream origin $branch
 
@@ -198,6 +218,7 @@ git push origin $branch
 **Hard blocks:**
 - `git push --force` — **ALWAYS BLOCKED**. Offer `--force-with-lease` only if user explains why.
 - Push to `main`/`master`/`develop` — **HARD STOP**. Explain why and offer feature branch instead.
+- Push to unknown/unrecognized remote — **HARD STOP**. Confirm destination with user first.
 
 ---
 
