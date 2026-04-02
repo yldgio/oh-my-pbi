@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "skills": {
+    "az-devops-cli": {
+      "source": "yldgio/vibe-grimoire",
+      "sourceType": "github",
+      "computedHash": "6dc6805bc40f81eae02a1a9b3f6c4b8e8615398546eb8438f69d770f43b5498d"
+    },
+    "fabric-cli-core": {
+      "source": "microsoft/fabric-cli",
+      "sourceType": "github",
+      "computedHash": "f27855627a5374e58c18290a52b387fef2ee36fb8c68fdd27134cc77c3e863c7"
+    },
+    "fabric-cli-powerbi": {
+      "source": "microsoft/fabric-cli",
+      "sourceType": "github",
+      "computedHash": "48f3754e5027cf47a21bc978f4f78861aff918dbaa175d1d54e60be139fde50b"
+    },
+    "fabric-lakehouse": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "6b5cc12c853f8bdd62103d096b0050765a5ff5d6b86dba6a1f35c6e885e1558d"
+    },
+    "gh-cli": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "cbe644b0c6760ae2a1eaafa39133920d889331327065d92a131675a665273e56"
+    },
+    "git-commit": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "2607fc60629b82b257136dd2a7a373f0a4466c0b49df7746d845d59313c99b21"
+    },
+    "microsoft-docs": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "e49127ff2162330ac79bfde9e7ed1297df15be9ade09164fdebfe697153fcc36"
+    },
+    "power-apps-code-app-scaffold": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "6d09e31150a185313f7fc8c001814edea2710810f25f07991f16b7a3dad20352"
+    },
+    "power-bi-dax-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "e98206e9864acfbfec475a1213c2687c293f0ed9e4903b6a9dc271ff313d0944"
+    },
+    "power-bi-model-design-review": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "0e1f4a853086b048036dbd6f21527c3557713d76bb036b4c0b51c370d73ea264"
+    },
+    "power-bi-performance-troubleshooting": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "93b5d254c846d138ed8e60395f71e2e61c10826b2f53db24be5b13125f11ffb0"
+    },
+    "power-bi-report-design-consultation": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "12dacbd64cd67369f810c094dc70427d4805788f4ec6b1257e17d8e6aed74cf1"
+    },
+    "power-platform-mcp-connector-suite": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "da3f7078803c9e4fd25ee50de3b6f2de1a480e6e1509d8338520a04e2596d9c1"
+    },
+    "powerbi-modeling": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "b98ebe4d3876548b0a10c1c97216fdf4d50799243ffbb38158b367574bbf19f5"
+    }
+  }
+}
