@@ -1,0 +1,42 @@
+{
+  "skill": "power-bi-model-design-review",
+  "version": "1.0",
+  "description": "Eval cases for Power BI data model design review skill",
+  "test_cases": [
+    {
+      "id": "tc-model-001",
+      "name": "Snowflake schema instead of star schema",
+      "input": "Review my Power BI model: I have a Sales fact table, connected to an Orders table, which connects to Customers, which connects to CustomerRegions, which connects to Countries. All relationships are one-to-many.",
+      "expected_output_contains": ["snowflak", "star schema", "dimension", "flatten"],
+      "evaluation_notes": "Must identify multi-hop dimension chain as snowflake anti-pattern and recommend flattening into single dimension"
+    },
+    {
+      "id": "tc-model-002",
+      "name": "Bidirectional relationship overuse",
+      "input": "My model has 8 bidirectional relationships between fact and dimension tables. Some reports seem slow. Is this related?",
+      "expected_output_contains": ["bidirectional", "single direction", "cross-filter", "performance"],
+      "evaluation_notes": "Must flag bidirectional relationship overuse as performance issue and recommend single-direction with CROSSFILTER in DAX when needed"
+    },
+    {
+      "id": "tc-model-003",
+      "name": "Missing date table",
+      "input": "I'm using the date column directly from my Sales table (Sales[InvoiceDate]) for all time intelligence calculations. Is this a problem?",
+      "expected_output_contains": ["date table", "mark as date table", "CALENDARAUTO", "time intelligence"],
+      "evaluation_notes": "Must recommend creating a dedicated date table and marking it as date table for correct time intelligence"
+    },
+    {
+      "id": "tc-model-004",
+      "name": "Pre-production review request",
+      "input": "We are going live with our Power BI model next week. Can you do a pre-production review? Model has: 3 fact tables, 8 dimensions, Import mode, ~50M rows total, RLS implemented.",
+      "expected_output_contains": ["go-live", "RLS", "performance", "refresh", "user acceptance"],
+      "evaluation_notes": "Must apply Pre-Production Review template: functionality, performance validation, security, go-live readiness"
+    },
+    {
+      "id": "tc-model-005",
+      "name": "Many-to-many relationship with text key",
+      "input": "I have a many-to-many relationship between Products and Promotions using a text column ProductCode. Should I be concerned?",
+      "expected_output_contains": ["many-to-many", "integer key", "surrogate", "performance", "bridge table"],
+      "evaluation_notes": "Must flag text key in M:M relationship as double performance issue and recommend integer surrogate key + bridge table pattern"
+    }
+  ]
+}
