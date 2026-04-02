@@ -88,8 +88,38 @@ function Invoke-OhMyPbiInstall {
         }
         Write-Step "Target project : $targetPath"
 
-        if (-not (Test-Path (Join-Path $targetPath '.git'))) {
-            Write-Warn "No .git folder found at '$targetPath'. Continuing anyway."
+        # 1b. Check git is installed
+        $gitAvailable = $null -ne (Get-Command git -ErrorAction SilentlyContinue)
+        if (-not $gitAvailable) {
+            Write-Host ""
+            Write-Warn "Git non e' installato sul sistema."
+            Write-Host ""
+            Write-Host "  Git e' necessario per usare oh-my-pbi." -ForegroundColor White
+            Write-Host "  Per installarlo scegli uno di questi metodi:" -ForegroundColor White
+            Write-Host ""
+            Write-Host "    Metodo 1 (consigliato — apri un terminale e incolla):" -ForegroundColor DarkGray
+            Write-Host "      winget install Git.Git" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "    Metodo 2 (scarica il programma di installazione):" -ForegroundColor DarkGray
+            Write-Host "      https://git-scm.com/download/win" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "  Dopo aver installato Git:" -ForegroundColor White
+            Write-Host "    1. Chiudi e riapri il terminale" -ForegroundColor DarkGray
+            Write-Host "    2. Riesegui questo comando di installazione" -ForegroundColor DarkGray
+            Write-Host ""
+            return
+        }
+
+        # 1c. Detect repo state and advise accordingly
+        $hasGitRepo = Test-Path (Join-Path $targetPath '.git')
+        if (-not $hasGitRepo) {
+            Write-Warn "Questa cartella non e' ancora un repository git."
+            Write-Host ""
+            Write-Host "  Nessun problema — i file di oh-my-pbi verranno installati ora." -ForegroundColor DarkGray
+            Write-Host "  Dopo l'installazione apri VS Code e scrivi in Copilot Chat:" -ForegroundColor DarkGray
+            Write-Host "    @oh-my-pbi inizializza il repository" -ForegroundColor Cyan
+            Write-Host "  L'agente ti guidera' passo dopo passo (clone o init)." -ForegroundColor DarkGray
+            Write-Host ""
         }
 
         # 2. Prepare a clean temp directory

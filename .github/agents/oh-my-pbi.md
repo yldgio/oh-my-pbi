@@ -242,10 +242,30 @@ Run all applicable skills. Never pick just one.
 
 1. **Verifica repo git (prima di tutto):**
    - Esegui: `git rev-parse --git-dir 2>$null`
-   - Se fallisce (`$LASTEXITCODE -ne 0`): **nessun repo trovato**
-     - Chiedi: *"Non ho trovato un repository git in questa cartella. Vuoi (1) clonare un repo esistente o (2) inizializzare un nuovo repo qui?"*
-     - Segui la sezione **Inizializza o Clona un Repo** della skill `git-workflow`
-     - Dopo init/clone, ricomincia da punto 2.
+   - Se fallisce (`$LASTEXITCODE -ne 0`): **nessun repo trovato → avvia wizard onboarding**
+
+   **Wizard onboarding (per utente non tecnico, tono amichevole):**
+
+   > *"Non trovo un repository git in questa cartella. Nessun problema — ti guido io!*
+   > *Hai già un progetto Power BI / Fabric con Git Integration su GitHub o Azure DevOps?"*
+
+   **→ SÌ, ho già un progetto remoto:**
+   > *"Ottimo! Incollami l'URL del repository (lo trovi su GitHub → Code → Clone, oppure su Azure DevOps → Repos → Clone)."*
+   - Esegui: `git clone <url> .` (clona nella cartella corrente)
+   - Verifica: `git log --oneline -3`
+   - Conferma: *"✅ Repository clonato. Sei pronto a lavorare!"*
+
+   **→ NO, parto da zero:**
+   > *"Perfetto, inizializzo un repository locale per il tuo progetto."*
+   - Esegui: `git init && git branch -M main`
+   - Conferma: *"✅ Repository inizializzato."*
+   - Chiedi: *"Vuoi collegarlo a un repository remoto su GitHub o Azure DevOps? È consigliato per avere un backup e poter collaborare."*
+     - **SÌ** → *"Crea un repository vuoto su GitHub/ADO, poi incollami l'URL."*
+       - `git remote add origin <url>`
+       - *"✅ Remoto configurato. Quando salvi il tuo primo lavoro, lo carico lì automaticamente."*
+     - **NO** → *"✅ Pronti! Lavoriamo in locale per ora — potrai aggiungere un remoto in qualsiasi momento."*
+
+   Dopo init/clone: ricomincia da punto 2.
 2. Run Repo State Gate (silent) — includes main/master check (see skill)
 3. **Main/master guard (always, before anything else):**
    - Check current branch: `git branch --show-current`
