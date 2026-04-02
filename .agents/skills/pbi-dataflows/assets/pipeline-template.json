@@ -1,0 +1,40 @@
+{
+  "_comment": "Fabric Data Pipeline — minimal template. Verify schema with microsoft-docs before deploying.",
+  "name": "SampleDataPipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "RunDataflow",
+        "type": "ExecuteDataflow",
+        "dependsOn": [],
+        "typeProperties": {
+          "dataflow": {
+            "referenceName": "MyDataflowGen2",
+            "type": "DataflowReference"
+          }
+        }
+      },
+      {
+        "name": "RunNotebook",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "RunDataflow",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "notebookId": "<notebook-guid>",
+          "workspaceId": "<workspace-guid>"
+        }
+      }
+    ],
+    "variables": {
+      "WorkspaceId": {
+        "type": "String",
+        "defaultValue": "<workspace-guid>"
+      }
+    },
+    "annotations": []
+  }
+}

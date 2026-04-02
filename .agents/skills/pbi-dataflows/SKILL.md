@@ -1,11 +1,11 @@
 ---
 name: pbi-dataflows
-description: >
-  Power Query M language, Power BI Dataflows (Gen1 and Gen2), and Microsoft
-  Fabric Data Pipelines. Covers M authoring, query folding, refresh strategy,
-  gateway configuration, and dataflow-to-Lakehouse output patterns.
-  Use when user asks about Power Query, dataflows, data transformation,
-  pipeline orchestration, or data ingestion in Power BI / Fabric.
+description: >-
+  Power Query M, Power BI Dataflows Gen1/Gen2, e Microsoft Fabric Data Pipelines.
+  Usa quando l'utente lavora con trasformazioni dati, query M lente, dataflow in errore,
+  gateway timeout, refresh che fallisce, vuole configurare output su Lakehouse,
+  orchestrare pipeline Fabric, o chiede "query folding", "incremental refresh",
+  "dataflow Gen2 vs Gen1", "pipeline Fabric", "M language", "Power Query ottimizzazione".
 license: MIT
 allowed-tools: runCommands, fetch
 ---
@@ -13,6 +13,8 @@ allowed-tools: runCommands, fetch
 # PBI Dataflows — Power Query, Dataflows & Fabric Pipelines
 
 > **Verification note:** Always load `microsoft-docs` and verify before advising on connector behavior, M function availability, or Fabric-specific dataflow features — these evolve rapidly.
+
+Fornisci guidance operativa e codice M / PowerShell verificato su Power Query, Dataflows e Fabric Pipelines. Per ogni risposta su connector behavior, M functions o Fabric API: verifica prima con `microsoft-docs` — queste evolvono rapidamente.
 
 ---
 

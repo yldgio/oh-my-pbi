@@ -1,0 +1,70 @@
+{
+  "skill": "pbi-dataflows",
+  "version": "1.0",
+  "description": "Eval cases for pbi-dataflows skill — positive triggers (should use skill) and negative triggers (should NOT use skill)",
+  "test_cases": [
+    {
+      "id": "tc-df-001",
+      "name": "Query folding optimization",
+      "type": "positive",
+      "input": "My Power Query M query is very slow. I'm adding a custom column before filtering rows. Is this a problem?",
+      "expected_output_contains": ["query folding", "filter", "before", "View Native Query", "fold"],
+      "expected_skill_triggered": true,
+      "evaluation_notes": "Must identify filter-after-transform as folding anti-pattern. Must recommend moving filter steps before custom column."
+    },
+    {
+      "id": "tc-df-002",
+      "name": "Dataflows Gen1 vs Gen2 comparison",
+      "type": "positive",
+      "input": "What is the difference between Power BI Dataflows Gen1 and Fabric Dataflows Gen2? When should I use each?",
+      "expected_output_contains": ["Gen1", "Gen2", "Lakehouse", "Power BI Service", "Fabric", "output destination"],
+      "expected_skill_triggered": true,
+      "evaluation_notes": "Must cover key differences: platform (PBI Service vs Fabric), output destinations, mashup engine version, Git integration."
+    },
+    {
+      "id": "tc-df-003",
+      "name": "Gateway timeout on large dataflow",
+      "type": "positive",
+      "input": "Our on-premises dataflow refresh fails after 2 hours with a gateway timeout. The table has 80M rows. How do I fix this?",
+      "expected_output_contains": ["incremental refresh", "RangeStart", "RangeEnd", "gateway", "partition"],
+      "expected_skill_triggered": true,
+      "evaluation_notes": "Must recommend incremental refresh with RangeStart/RangeEnd as primary fix. May also suggest Lakehouse staging + pipeline for initial load."
+    },
+    {
+      "id": "tc-df-004",
+      "name": "Trigger Fabric dataflow refresh via PowerShell",
+      "type": "positive",
+      "input": "How do I trigger a Fabric Dataflow Gen2 refresh programmatically using PowerShell?",
+      "expected_output_contains": ["REST", "api.fabric.microsoft.com", "jobType=Refresh", "Bearer", "Invoke-RestMethod"],
+      "expected_skill_triggered": true,
+      "evaluation_notes": "Must provide REST API call pattern. Must include verification note to check endpoint with microsoft-docs."
+    },
+    {
+      "id": "tc-df-005",
+      "name": "mashup.json Git conflict",
+      "type": "positive",
+      "input": "I have a merge conflict in mashup.json in my Fabric Dataflow. How do I resolve it?",
+      "expected_output_contains": ["mashup.json", "do not", "Fabric portal", "export", "re-import", "known limitation"],
+      "expected_skill_triggered": true,
+      "evaluation_notes": "Must warn against manual editing of mashup.json. Must recommend Fabric portal export/re-import workaround."
+    },
+    {
+      "id": "tc-df-006",
+      "name": "Negative: DAX measure optimization",
+      "type": "negative",
+      "input": "How do I optimize this DAX measure for better performance?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-dax-optimization",
+      "evaluation_notes": "DAX optimization is NOT in scope for pbi-dataflows. Should trigger power-bi-dax-optimization instead."
+    },
+    {
+      "id": "tc-df-007",
+      "name": "Negative: Report visual design",
+      "type": "negative",
+      "input": "What chart type should I use to show monthly sales trends?",
+      "expected_skill_triggered": false,
+      "expected_alternative_skill": "power-bi-report-design-consultation",
+      "evaluation_notes": "Chart/visual selection is NOT in scope for pbi-dataflows. Should trigger power-bi-report-design-consultation."
+    }
+  ]
+}
