@@ -1,0 +1,44 @@
+{
+  "skill_name": "git-workflow",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Devo iniziare a lavorare su una nuova feature: aggiungere la misura 'Margine Netto %' al modello Power BI. Come creo un branch dedicato? Sono su main adesso.",
+      "expected_output": "L'agente esegue il Repo State Gate, rileva che siamo su main (branch protetto), blocca l'operazione diretta e guida la creazione di un feature branch corretto come feature/margine-netto usando origin/main come base.",
+      "assertions": [
+        "Il Repo State Gate viene eseguito prima di qualsiasi operazione di scrittura",
+        "L'agente segnala che main è un branch protetto e blocca il lavoro diretto su di esso",
+        "Viene proposto o creato un branch con formato feature/* (es. feature/margine-netto)",
+        "Il branch viene creato da origin/main (non da main locale)",
+        "Il transcript include il comando git checkout -b con il nome del branch"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Ho alcune modifiche non salvate sul mio branch feature/report-vendite e voglio sincronizzarmi con le ultime modifiche dal remoto. Fai pure il pull.",
+      "expected_output": "L'agente rileva che il working tree non è pulito, blocca il pull e guida l'utente a fare prima stash o commit prima di procedere con git pull --rebase.",
+      "assertions": [
+        "L'agente controlla lo stato del working tree prima di fare pull (git status --porcelain)",
+        "L'agente blocca il pull perché ci sono modifiche non committate",
+        "Viene proposta come alternativa l'operazione di git stash o commit prima del pull",
+        "Viene usato git pull --rebase (non git pull semplice) nella soluzione proposta",
+        "Il messaggio di blocco è in italiano e spiega chiaramente il problema"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Ho finito di lavorare su feature/fix-filtro-date, voglio mandare le modifiche su GitHub. Fai il push.",
+      "expected_output": "L'agente mostra remoto e branch di destinazione, chiede conferma esplicita prima di procedere al push, e usa git push --set-upstream origin oppure git push origin, senza mai usare --force.",
+      "assertions": [
+        "L'agente mostra il remoto e il branch di destinazione prima del push",
+        "Viene richiesta una conferma esplicita dell'utente prima di eseguire il push",
+        "Il comando usato è git push origin (o --set-upstream) senza --force",
+        "L'agente non esegue il push su main/master/develop senza blocco",
+        "Il transcript documenta i guardrail di sicurezza sul push"
+      ],
+      "files": []
+    }
+  ]
+}

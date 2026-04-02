@@ -1,0 +1,44 @@
+{
+  "skill_name": "git-commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "ho appena corretto un bug nel filtro delle date del report vendite mensile — il filtro non filtrava i dati di dicembre 2024. committa le modifiche.\n\nEcco il diff:\n```diff\n--- a/measures/DateFilter.dax\n+++ b/measures/DateFilter.dax\n@@ -3,7 +3,7 @@\n [Vendite Filtrate] =\n CALCULATE(\n     [Totale Vendite],\n-    DATESBETWEEN('Calendario'[Data], DATE(2024,1,1), DATE(2024,11,30))\n+    DATESBETWEEN('Calendario'[Data], DATE(2024,1,1), DATE(2024,12,31))\n )\n```",
+      "expected_output": "Un messaggio di commit in formato Conventional Commits con tipo 'fix', scope appropriato, descrizione chiara, step di conferma mostrato all'utente, e trailer Co-authored-by obbligatorio.",
+      "files": [],
+      "assertions": [
+        "Il messaggio di commit inizia con 'fix' seguito da uno scope opzionale tra parentesi e due punti",
+        "Il messaggio contiene il trailer 'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>'",
+        "L'agente mostra il messaggio proposto e chiede conferma prima di eseguire il commit",
+        "La descrizione del commit menziona il filtro delle date o dicembre o la misura corretta",
+        "Il messaggio di descrizione è sotto i 72 caratteri"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ho creato una nuova misura DAX chiamata [Margine Lordo %] nel file measures/Profitti.dax — calcola il margine lordo come percentuale del fatturato. fai un commit.\n\nEcco il diff:\n```diff\n--- a/measures/Profitti.dax\n+++ b/measures/Profitti.dax\n@@ -8,3 +8,9 @@\n [Costo del Venduto] =\n SUMX('Vendite', 'Vendite'[Quantità] * 'Prodotti'[CostoUnitario])\n+\n+[Margine Lordo %] =\n+DIVIDE(\n+    [Fatturato] - [Costo del Venduto],\n+    [Fatturato],\n+    0\n+)\n```",
+      "expected_output": "Un messaggio di commit con tipo 'feat', scope appropriato (es. measures o profitti), descrizione della nuova misura DAX, step di conferma, e trailer Co-authored-by.",
+      "files": [],
+      "assertions": [
+        "Il messaggio di commit inizia con 'feat' seguito da uno scope opzionale tra parentesi e due punti",
+        "Il messaggio contiene il trailer 'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>'",
+        "L'agente mostra il messaggio proposto e chiede conferma prima di eseguire il commit",
+        "La descrizione menziona la misura Margine o la percentuale o il profitto",
+        "Il messaggio di descrizione è sotto i 72 caratteri"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "ho aggiornato il README.md con le istruzioni di installazione e ho aggiunto il file docs/misure-dax.md con la documentazione di tutte le misure DAX del modello. salva le modifiche su git.\n\nEcco il diff:\n```diff\n--- a/README.md\n+++ b/README.md\n@@ -1,3 +1,12 @@\n # Report Vendite\n+\n+## Installazione\n+1. Clona il repository\n+2. Apri il file .pbix in Power BI Desktop\n+3. Aggiorna le credenziali del datasource\n--- /dev/null\n+++ b/docs/misure-dax.md\n@@ -0,0 +1,20 @@\n+# Documentazione Misure DAX\n+\n+## [Totale Vendite]\n+Calcola il totale delle vendite nette.\n+\n+## [Margine Lordo %]\n+Percentuale di margine lordo sul fatturato.\n```",
+      "expected_output": "Un messaggio di commit con tipo 'docs', descrizione delle modifiche alla documentazione, step di conferma, e trailer Co-authored-by.",
+      "files": [],
+      "assertions": [
+        "Il messaggio di commit inizia con 'docs' seguito da uno scope opzionale tra parentesi e due punti",
+        "Il messaggio contiene il trailer 'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>'",
+        "L'agente mostra il messaggio proposto e chiede conferma prima di eseguire il commit",
+        "La descrizione menziona documentazione, README, o misure DAX",
+        "Il messaggio di descrizione è sotto i 72 caratteri"
+      ]
+    }
+  ]
+}
